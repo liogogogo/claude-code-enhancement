@@ -4,13 +4,20 @@
 基于 Docker 容器提供安全的代码执行环境（纯工具封装，无智能能力）
 """
 
-import docker
 import tempfile
 import os
 from pathlib import Path
 from typing import Optional, Dict, Any
 from dataclasses import dataclass
 from enum import Enum
+
+# Docker 是可选依赖
+try:
+    import docker
+    HAS_DOCKER = True
+except ImportError:
+    HAS_DOCKER = False
+    docker = None
 
 
 class ExecutionEnvironment(Enum):
@@ -56,7 +63,7 @@ class ExecutionSandbox:
             cpu_limit: CPU 限制 (如 1.0 = 1核)
             timeout: 超时时间（秒）
         """
-        self.client = docker.from_env()
+        self.client = docker.from_env() if HAS_DOCKER else None
         self.memory_limit = memory_limit
         self.cpu_limit = cpu_limit
         self.timeout = timeout

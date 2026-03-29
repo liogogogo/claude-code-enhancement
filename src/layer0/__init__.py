@@ -11,15 +11,20 @@ Layer 0: 基础设施层（Infrastructure Layer）
 注意: 本层不包含任何智能能力，仅作为上层的基础设施
 """
 
-from .execution_sandbox import ExecutionSandbox, ExecutionEnvironment
-from .linting_tools import LintingTools, LinterType
-from .test_frameworks import TestFrameworks, TestFramework
+from .execution_sandbox import ExecutionSandbox, ExecutionEnvironment, ExecutionResult
+from .linting_tools import LintingFeedback, LinterType, LintResult, LintIssue
+from .test_frameworks import TestVerification, TestFramework, TestResult, TestCase
 
 __all__ = [
     "ExecutionSandbox",
     "ExecutionEnvironment",
-    "LintingTools",
+    "ExecutionResult",
+    "LintingFeedback",
     "LinterType",
-    "TestFrameworks",
+    "LintResult",
+    "LintIssue",
+    "TestVerification",
     "TestFramework",
+    "TestResult",
+    "TestCase",
 ]
