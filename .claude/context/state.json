@@ -1,0 +1,252 @@
+{
+  "indexed_files": [
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/contrastive_learning.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/adaptation_engine.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/unified.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/hooks/context_query.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/memory/personal_memory.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/self_modification.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/tests/test_multi_file_reasoning.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/tests/conftest.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/tests/test_context_manager.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/observation.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/llm/__init__.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/feedback.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/test_frameworks.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/tests/test_permission_integration.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/meta_learning.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/hooks/permission_report.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/execution_sandbox.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/hooks/permission_learning_hook.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/__init__.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/strategy_optimizer.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/knowledge_transfer.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/__init__.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/__init__.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/multi_file_reasoning.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/action.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/advanced_reasoning.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/utils/__init__.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/feedback_loop.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/__init__.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/linting_tools.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/project_knowledge.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/context_manager.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/__init__.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/continuous_learning.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/tests/test_personal_memory.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/error_learning.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/evolution_tracker.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/__init__.py",
+    "/Users/liocc/Development/active/claude-code-enhancement/src/memory/__init__.py"
+  ],
+  "index_metadata": {
+    "/Users/liocc/Development/active/claude-code-enhancement/tests/conftest.py": {
+      "mtime": 1774775829.9076605,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/tests/test_personal_memory.py": {
+      "mtime": 1774775829.909066,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/tests/test_permission_integration.py": {
+      "mtime": 1774777561.6827428,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/tests/test_context_manager.py": {
+      "mtime": 1774775829.9080856,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/tests/test_multi_file_reasoning.py": {
+      "mtime": 1774775829.9085844,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/hooks/permission_learning_hook.py": {
+      "mtime": 1774777177.2922654,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/hooks/permission_report.py": {
+      "mtime": 1774777203.0668821,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/hooks/context_query.py": {
+      "mtime": 1774778565.9041133,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/__init__.py": {
+      "mtime": 1774751349.1260207,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/llm/__init__.py": {
+      "mtime": 1774751349.3874707,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/multi_file_reasoning.py": {
+      "mtime": 1774778422.42202,
+      "chunks": 2
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/context_manager.py": {
+      "mtime": 1774779033.3232539,
+      "chunks": 2
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/unified.py": {
+      "mtime": 1774778469.82504,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/self_modification.py": {
+      "mtime": 1774751718.7200053,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/strategy_optimizer.py": {
+      "mtime": 1774751778.3735032,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/__init__.py": {
+      "mtime": 1774775829.9049547,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/meta_learning.py": {
+      "mtime": 1774751746.2166164,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/core/project_knowledge.py": {
+      "mtime": 1774778441.0755777,
+      "chunks": 2
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/observation.py": {
+      "mtime": 1774752024.1202497,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/feedback.py": {
+      "mtime": 1774752078.0295243,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/__init__.py": {
+      "mtime": 1774752002.9577124,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/action.py": {
+      "mtime": 1774752056.8841543,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/memory/__init__.py": {
+      "mtime": 1774775829.9070265,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/memory/personal_memory.py": {
+      "mtime": 1774777093.8820722,
+      "chunks": 3
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/test_frameworks.py": {
+      "mtime": 1774751992.9385607,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/__init__.py": {
+      "mtime": 1774751971.4495559,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/linting_tools.py": {
+      "mtime": 1774751986.372118,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/execution_sandbox.py": {
+      "mtime": 1774751981.3048925,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/utils/__init__.py": {
+      "mtime": 1774751349.4604769,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/contrastive_learning.py": {
+      "mtime": 1774751571.4645429,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/__init__.py": {
+      "mtime": 1774752087.2549915,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/error_learning.py": {
+      "mtime": 1774751540.2791343,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/knowledge_transfer.py": {
+      "mtime": 1774751825.5619287,
+      "chunks": 2
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/feedback_loop.py": {
+      "mtime": 1774751599.7589145,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/advanced_reasoning.py": {
+      "mtime": 1774751803.1242821,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/__init__.py": {
+      "mtime": 1774752101.3004405,
+      "chunks": 1
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/evolution_tracker.py": {
+      "mtime": 1774751666.497028,
+      "chunks": 2
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/continuous_learning.py": {
+      "mtime": 1774751857.049795,
+      "chunks": 2
+    },
+    "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/adaptation_engine.py": {
+      "mtime": 1774751635.5091588,
+      "chunks": 2
+    }
+  },
+  "summaries": {
+    "project": {
+      "level": "project",
+      "content": "# Project Structure\n\n## .py (39 files)\n- /Users/liocc/Development/active/claude-code-enhancement/src/layer2/contrastive_learning.py\n- /Users/liocc/Development/active/claude-code-enhancement/src/layer3/adaptation_engine.py\n- /Users/liocc/Development/active/claude-code-enhancement/src/core/unified.py\n- /Users/liocc/Development/active/claude-code-enhancement/hooks/context_query.py\n- /Users/liocc/Development/active/claude-code-enhancement/src/memory/personal_memory.py\n- /Users/liocc/Development/active/claude-code-enhancement/src/core/self_modification.py\n- /Users/liocc/Development/active/claude-code-enhancement/tests/test_multi_file_reasoning.py\n- /Users/liocc/Development/active/claude-code-enhancement/tests/conftest.py\n- /Users/liocc/Development/active/claude-code-enhancement/tests/test_context_manager.py\n- /Users/liocc/Development/active/claude-code-enhancement/src/layer1/observation.py\n- ... and 29 more\n\n",
+      "tokens": 229,
+      "created_at": "2026-03-29T18:10:45.461388",
+      "source_files": [
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/contrastive_learning.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/adaptation_engine.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/core/unified.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/hooks/context_query.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/memory/personal_memory.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/core/self_modification.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/tests/test_multi_file_reasoning.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/tests/conftest.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/tests/test_context_manager.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/observation.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/llm/__init__.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/feedback.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/test_frameworks.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/tests/test_permission_integration.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/core/meta_learning.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/hooks/permission_report.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/execution_sandbox.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/hooks/permission_learning_hook.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/__init__.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/core/strategy_optimizer.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/knowledge_transfer.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/core/__init__.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/__init__.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/core/multi_file_reasoning.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer1/action.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/advanced_reasoning.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/utils/__init__.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/feedback_loop.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/__init__.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer0/linting_tools.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/core/project_knowledge.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/core/context_manager.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/__init__.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/continuous_learning.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/tests/test_personal_memory.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer2/error_learning.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/evolution_tracker.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/layer3/__init__.py",
+        "/Users/liocc/Development/active/claude-code-enhancement/src/memory/__init__.py"
+      ],
+      "metadata": {}
+    }
+  },
+  "conversation_history": []
+}

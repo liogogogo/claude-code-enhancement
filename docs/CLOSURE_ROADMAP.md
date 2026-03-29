@@ -50,6 +50,25 @@
 | 3 | 上下文管理闭环 | ✅ 完成 | 22 测试通过 |
 | 4 | Layer 数据流闭环 | ✅ 完成 | 18 测试通过 |
 
+### 架构简化（2026-03-29）
+
+删除了未使用的复杂模块，保留核心功能：
+
+**删除的文件（3300+ 行）：**
+- `src/layer2/contrastive_learning.py` - 神经网络训练
+- `src/layer2/knowledge_transfer.py` - 迁移学习
+- `src/layer2/advanced_reasoning.py` - PyTorch 推理
+- `src/layer3/continuous_learning.py` - 持续学习
+- `src/layer3/adaptation_engine.py` - 复杂适配引擎
+- `src/layer3/evolution_tracker.py` - 进化追踪
+
+**保留的简化模块：**
+- `src/layer2/cognitive.py` - 错误分析、推理引擎
+- `src/layer3/meta.py` - 决策引擎、执行追踪
+- `src/layer2/feedback_loop.py` - 反馈循环
+
+**TODO/pass 数量：** 62 → 20（减少 68%）
+
 ### 测试覆盖
 
 | 模块 | 测试文件 | 测试数 | 状态 |

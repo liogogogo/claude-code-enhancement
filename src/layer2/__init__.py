@@ -1,13 +1,20 @@
 """
-Layer 2: 认知能力层（Cognitive Layer）
+Layer 2: 认知能力层（简化版）
 
-本层包含通用的认知能力，是智能的核心。
-
-核心能力:
-- 推理（Reasoning）: 因果推理、反事实推理、多步推理
-- 学习（Learning）: 错误学习、对比学习
-- 迁移（Transfer）: 知识迁移、零样本/少样本学习
-- 记忆（Memory）: 经验记忆、反馈循环
-
-这些能力是通用的，可应用于各种领域，不限于软件开发。
+核心功能：
+- 错误分析
+- 推理引擎
 """
+
+from .cognitive import ErrorAnalyzer, ReasoningEngine, AnalysisResult, ErrorSeverity
+from .feedback_loop import FeedbackLoop, FeedbackType, FeedbackAction
+
+__all__ = [
+    "ErrorAnalyzer",
+    "ReasoningEngine",
+    "AnalysisResult",
+    "ErrorSeverity",
+    "FeedbackLoop",
+    "FeedbackType",
+    "FeedbackAction",
+]

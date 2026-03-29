@@ -130,10 +130,12 @@ class TestPipelineFlow:
         with tempfile.TemporaryDirectory() as tmpdir:
             pipeline = EnhancementPipeline(Path(tmpdir))
 
+            # 检查各层组件已初始化
             assert pipeline.observer is not None
             assert pipeline.actor is not None
-            assert pipeline.error_learner is not None
-            assert pipeline.adaptation is not None
+            assert pipeline.error_analyzer is not None  # 简化版
+            assert pipeline.decision_engine is not None  # 简化版
+            assert pipeline.tracker is not None  # 简化版
 
     def test_pipeline_run_simple_task(self):
         """测试管道运行简单任务"""
@@ -306,16 +308,16 @@ class TestPipelineIntegration:
             assert pipeline.memory is not None
 
     def test_pipeline_with_evolution_tracker(self):
-        """测试管道与进化追踪器集成"""
+        """测试管道与执行追踪器集成"""
         with tempfile.TemporaryDirectory() as tmpdir:
             pipeline = EnhancementPipeline(Path(tmpdir))
 
             # 运行管道
             result = pipeline.run("test task")
 
-            # 进化追踪器应该记录了决策
-            # EvolutionTracker 有 history 或类似属性
-            assert pipeline.evolution is not None
+            # 追踪器应该记录了执行
+            assert pipeline.tracker is not None
+            assert pipeline.tracker.stats["total_runs"] > 0
 
 
 class TestErrorHandling:

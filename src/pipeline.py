@@ -1,12 +1,11 @@
 """
-增强管道 - 串联 Layer 0-3 的数据流
+增强管道 - 串联 Layer 0-3 的数据流（简化版）
 
 实现闭环：Layer 0 → Layer 1 → Layer 2 → Layer 3 → Layer 0
 """
 
 from pathlib import Path
-from typing import Any, Dict, Optional, Callable
-from dataclasses import dataclass, field
+from typing import Any, Dict, Optional
 import time
 
 from .interfaces import (
@@ -24,17 +23,15 @@ from .interfaces import (
 from .layer0 import ExecutionSandbox, ExecutionEnvironment
 
 # Layer 1
-from .layer1.observation import Observer, ObservationType, ObservationResult
-from .layer1.action import Actor, ActionType, ActionResult
+from .layer1.observation import Observer, ObservationType
+from .layer1.action import Actor, ActionType
 from .layer1.feedback import FeedbackCollector, FeedbackType
 
-# Layer 2
-from .layer2.error_learning import ErrorLearningModule
-from .layer2.advanced_reasoning import MultiStepReasoner
+# Layer 2 (简化版)
+from .layer2.cognitive import ErrorAnalyzer, ReasoningEngine
 
-# Layer 3
-from .layer3.adaptation_engine import AdaptationEngine
-from .layer3.evolution_tracker import EvolutionTracker
+# Layer 3 (简化版)
+from .layer3.meta import DecisionEngine, ExecutionTracker
 
 # Memory
 from .memory.personal_memory import PersonalMemory
@@ -42,22 +39,22 @@ from .memory.personal_memory import PersonalMemory
 
 class EnhancementPipeline:
     """
-    增强管道 - 四层闭环
+    增强管道 - 四层闭环（简化版）
 
     数据流:
     ┌─────────────────────────────────────────────────────────┐
     │                                                          │
     │   Layer 0: 工具执行                                      │
-    │   └─→ ExecutionSandbox, LintingTools, TestFrameworks    │
+    │   └─→ 测试、Lint、观察                                   │
     │                                                          │
     │   Layer 1: 感知行动                                      │
-    │   └─→ Observer, Actor, FeedbackCollector                │
+    │   └─→ 观察结果、收集反馈                                 │
     │                                                          │
     │   Layer 2: 认知分析                                      │
-    │   └─→ ErrorLearningModule, MultiStepReasoner             │
+    │   └─→ 错误分析、推理引擎                                 │
     │                                                          │
     │   Layer 3: 元认知决策                                    │
-    │   └─→ AdaptationEngine, EvolutionTracker                │
+    │   └─→ 决策引擎、执行追踪                                 │
     │                                                          │
     │   → 回到 Layer 0 执行决策                                │
     │                                                          │
@@ -85,13 +82,13 @@ class EnhancementPipeline:
         self.actor = Actor()
         self.feedback = FeedbackCollector()
 
-        # Layer 2: 认知能力
-        self.error_learner = ErrorLearningModule()
-        self.reasoner = MultiStepReasoner()
+        # Layer 2: 认知能力 (简化版)
+        self.error_analyzer = ErrorAnalyzer()
+        self.reasoner = ReasoningEngine()
 
-        # Layer 3: 元认知
-        self.adaptation = AdaptationEngine()
-        self.evolution = EvolutionTracker()
+        # Layer 3: 元认知 (简化版)
+        self.decision_engine = DecisionEngine()
+        self.tracker = ExecutionTracker()
 
         # Memory
         self.memory = PersonalMemory()
@@ -306,7 +303,7 @@ class EnhancementPipeline:
         """
         Layer 2: 认知分析
 
-        分析 Layer 1 的感知结果，找出问题和建议
+        使用简化的分析器分析感知结果
         """
         self.stats["layer_stats"]["layer2"]["calls"] += 1
 
@@ -317,7 +314,7 @@ class EnhancementPipeline:
         if layer1_output.observation_type == "test_result":
             if not layer1_output.data.get("passed", True):
                 failures = layer1_output.data.get("failures", [])
-                for failure in failures[:3]:  # 只分析前3个失败
+                for failure in failures[:3]:
                     findings.append(AnalysisFinding(
                         finding_type="error",
                         description=f"Test failure: {failure}",
@@ -337,7 +334,6 @@ class EnhancementPipeline:
                     ))
                 suggestions.append("Fix lint errors for code quality")
 
-        # 计算置信度
         confidence = 0.9 if findings else 0.5
 
         output = Layer2Output(
@@ -360,13 +356,12 @@ class EnhancementPipeline:
         """
         Layer 3: 元认知决策
 
-        基于 Layer 2 的分析做出决策
+        使用简化的决策引擎做出决策
         """
         self.stats["layer_stats"]["layer3"]["calls"] += 1
 
         # 根据分析结果做决策
         if not layer2_output.findings:
-            # 没有问题，可以继续
             decision = "execute"
             reasoning = "No issues found, proceeding with execution"
             action_plan = [
@@ -378,7 +373,6 @@ class EnhancementPipeline:
             confidence = 0.9
 
         elif any(f.severity > 0.7 for f in layer2_output.findings):
-            # 有严重问题，需要修复
             decision = "modify"
             reasoning = "Critical issues found, modification required"
             action_plan = [
@@ -391,7 +385,6 @@ class EnhancementPipeline:
             confidence = 0.85
 
         else:
-            # 有小问题，可以继续但要注意
             decision = "execute"
             reasoning = "Minor issues found, proceeding with caution"
             action_plan = [
@@ -411,50 +404,50 @@ class EnhancementPipeline:
             learning_update={"findings_count": len(layer2_output.findings)},
         )
 
-        # 记录到进化追踪器（简化版本）
-        # EvolutionTracker 用于追踪进化过程，这里记录决策
-        try:
-            self.evolution.record_generation(
-                generation=pipeline_ctx.iteration,
-                metrics={"confidence": output.confidence, "decision": output.decision},
-            )
-        except Exception:
-            pass  # 进化追踪是可选的
+        # 记录到追踪器
+        self.tracker.record(
+            decision=self._create_decision(output),
+            success=output.confidence > 0.5,
+        )
 
         self.stats["layer_stats"]["layer3"]["successes"] += 1
         return output
 
+    def _create_decision(self, output: Layer3Output):
+        """创建 Decision 对象用于追踪器"""
+        from .layer3.meta import Decision, DecisionType
+
+        decision_map = {
+            "execute": DecisionType.EXECUTE,
+            "modify": DecisionType.MODIFY,
+            "rollback": DecisionType.ROLLBACK,
+            "learn": DecisionType.LEARN,
+        }
+
+        return Decision(
+            decision=decision_map.get(output.decision, DecisionType.EXECUTE),
+            reasoning=output.reasoning,
+            action_plan=output.action_plan,
+            confidence=output.confidence,
+        )
+
     def run_iteration(self, task: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         运行一次完整迭代（包括执行决策后的反馈）
-
-        这是一个完整的闭环：
-        Layer 0 → Layer 1 → Layer 2 → Layer 3 → Layer 0
         """
         # 运行管道
         decision = self.run(task, context)
 
         # 执行决策
         if decision.decision == "execute":
-            # 执行计划
             for step in decision.action_plan:
                 self.actor.act(
                     ActionType.COMMAND_EXECUTION,
                     {"command": step.description},
                 )
 
-        # 收集反馈
-        try:
-            feedback = self.feedback.collect_feedback(
-                FeedbackType.EXECUTION,
-                {"decision": decision.decision, "success": decision.confidence > 0.5},
-            )
-        except Exception:
-            feedback = {"type": "execution", "success": decision.confidence > 0.5}
-
-        # 学习
+        # 记录学习
         if decision.learning_update:
-            # 记录学习数据（简化版本）
             self.memory.record_command(
                 command=f"pipeline:{decision.decision}",
                 success=decision.confidence > 0.5,
@@ -463,7 +456,6 @@ class EnhancementPipeline:
 
         return {
             "decision": decision.to_dict(),
-            "feedback": feedback,
             "stats": self.stats,
         }
 
