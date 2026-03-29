@@ -31,6 +31,18 @@
 
 ---
 
+## 🆕 v2.1 新功能
+
+### CLI 增强工具
+
+| 功能 | 说明 | 文档 |
+|------|------|------|
+| **权限学习 Hook** | 智能权限学习，自动归纳权限模式 | [指南](docs/PERMISSION_HOOK_GUIDE.md) |
+| **MCP 集成** | 与官方 MCP 服务器配合使用 | [指南](docs/MCP_INTEGRATION_GUIDE.md) |
+| **配置模板** | 项目级配置模板（Python/Go/通用） | [指南](docs/SETTINGS_TEMPLATES.md) |
+
+---
+
 ## 🚀 5 分钟快速开始
 
 ### 方式一：一键增强（推荐）
@@ -62,6 +74,26 @@ pip install -e .
 
 # 可选：向量搜索依赖
 pip install chromadb sentence-transformers
+```
+
+### CLI 增强工具 (v2.1+)
+
+**权限学习 Hook**:
+
+```bash
+# 查看权限学习报告
+python3 hooks/permission_report.py
+
+# 只看建议
+python3 hooks/permission_report.py --suggest
+```
+
+**应用配置模板**:
+
+```bash
+# 应用 Python 项目模板
+mkdir -p .claude
+cp templates/settings.python.json .claude/settings.json
 ```
 
 ---
@@ -184,6 +216,15 @@ claude-code-enhancement/
 ├── config/                 # 一键安装配置
 │   ├── install.sh
 │   └── settings.template.json
+├── hooks/                  # CLI Hooks (v2.1+)
+│   ├── hooks.json
+│   ├── permission_learning_hook.py
+│   └── permission_report.py
+├── templates/              # 配置模板 (v2.1+)
+│   ├── settings.minimal.json
+│   ├── settings.python.json
+│   ├── settings.go.json
+│   └── settings.local.json
 ├── src/
 │   ├── core/               # 核心模块
 │   │   ├── context_manager.py      # 上下文管理
@@ -207,6 +248,9 @@ claude-code-enhancement/
 | [快速开始](docs/QUICK_START.md)     | 5 分钟上手指南 |
 | [API 参考](docs/API.md)             | 完整 API 文档  |
 | [架构设计](docs/ARCHITECTURE_V2.md) | 四层架构详解   |
+| [权限 Hook](docs/PERMISSION_HOOK_GUIDE.md) | 权限学习指南 |
+| [MCP 集成](docs/MCP_INTEGRATION_GUIDE.md) | MCP 服务器配置 |
+| [配置模板](docs/SETTINGS_TEMPLATES.md) | 模板使用说明 |
 | [贡献指南](CONTRIBUTING.md)         | 如何贡献代码   |
 
 ---
@@ -265,9 +309,10 @@ make build       # 构建发布包
 | 版本    | 功能                           |
 | ------- | ------------------------------ |
 | v1.0 ✅ | 核心模块，配置增强             |
-| v1.1 🚧 | LSP 集成，更好的类型推断       |
-| v1.2 📋 | IDE 插件（VS Code, JetBrains） |
-| v2.0 📋 | 自我进化，元学习               |
+| v2.0 ✅ | 四层架构，自我进化             |
+| v2.1 ✅ | 权限学习，MCP 集成，配置模板   |
+| v2.2 🚧 | LSP 集成，更好的类型推断       |
+| v2.3 📋 | IDE 插件（VS Code, JetBrains） |
 
 ---
 

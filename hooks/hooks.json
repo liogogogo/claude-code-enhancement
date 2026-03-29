@@ -1,0 +1,17 @@
+{
+  "description": "Claude Code Enhancement - Permission Learning Hooks",
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PROJECT_ROOT}/hooks/permission_learning_hook.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

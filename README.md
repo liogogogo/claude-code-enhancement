@@ -31,6 +31,18 @@
 
 ---
 
+## 🆕 What's New in v2.1
+
+### CLI Enhancement Tools
+
+| Feature | Description | Docs |
+|---------|-------------|------|
+| **Permission Learning Hook** | Smart permission learning, auto-induct patterns | [Guide](docs/PERMISSION_HOOK_GUIDE.md) |
+| **MCP Integration** | Work with official MCP servers | [Guide](docs/MCP_INTEGRATION_GUIDE.md) |
+| **Settings Templates** | Project-level config templates (Python/Go/General) | [Guide](docs/SETTINGS_TEMPLATES.md) |
+
+---
+
 ## 🚀 Quick Start (5 Minutes)
 
 ### Option 1: One-Line Install (Recommended)
@@ -62,6 +74,26 @@ pip install -e .
 
 # Optional: vector search dependencies
 pip install chromadb sentence-transformers
+```
+
+### CLI Enhancement Tools (v2.1+)
+
+**Permission Learning Hook**:
+
+```bash
+# View permission learning report
+python3 hooks/permission_report.py
+
+# View suggestions only
+python3 hooks/permission_report.py --suggest
+```
+
+**Apply Config Template**:
+
+```bash
+# Apply Python project template
+mkdir -p .claude
+cp templates/settings.python.json .claude/settings.json
 ```
 
 ---
@@ -186,6 +218,15 @@ claude-code-enhancement/
 ├── config/                 # One-click install config
 │   ├── install.sh
 │   └── settings.template.json
+├── hooks/                  # CLI Hooks (v2.1+)
+│   ├── hooks.json
+│   ├── permission_learning_hook.py
+│   └── permission_report.py
+├── templates/              # Config templates (v2.1+)
+│   ├── settings.minimal.json
+│   ├── settings.python.json
+│   ├── settings.go.json
+│   └── settings.local.json
 ├── src/
 │   ├── core/               # Core modules
 │   │   ├── context_manager.py      # Context management
@@ -209,6 +250,9 @@ claude-code-enhancement/
 | [Quick Start](docs/QUICK_START.md)      | 5-minute guide    |
 | [API Reference](docs/API.md)            | Full API docs     |
 | [Architecture](docs/ARCHITECTURE_V2.md) | 4-layer design    |
+| [Permission Hook](docs/PERMISSION_HOOK_GUIDE.md) | Permission learning |
+| [MCP Integration](docs/MCP_INTEGRATION_GUIDE.md) | MCP servers |
+| [Settings Templates](docs/SETTINGS_TEMPLATES.md) | Config templates |
 | [Contributing](CONTRIBUTING.md)         | How to contribute |
 
 ---
@@ -267,9 +311,10 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md)
 | Version | Features                               |
 | ------- | -------------------------------------- |
 | v1.0 ✅ | Core modules, config enhancement       |
-| v1.1 🚧 | LSP integration, better type inference |
-| v1.2 📋 | IDE plugins (VS Code, JetBrains)       |
-| v2.0 📋 | Self-evolution, meta-learning          |
+| v2.0 ✅ | 4-layer architecture, self-evolution   |
+| v2.1 ✅ | Permission learning, MCP integration, templates |
+| v2.2 🚧 | LSP integration, better type inference |
+| v2.3 📋 | IDE plugins (VS Code, JetBrains)       |
 
 ---
 
