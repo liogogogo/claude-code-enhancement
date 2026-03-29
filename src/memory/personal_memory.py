@@ -378,6 +378,290 @@ PERMISSION_PATTERN_RULES = [
         "pattern": "Bash(go {command}:*)",
         "description": "go {command}",
     },
+    # yarn
+    {
+        "match": r"^Bash\(yarn (\w+):.*\)$",
+        "pattern": "Bash(yarn {command}:*)",
+        "description": "yarn {command}",
+    },
+    # make
+    {
+        "match": r"^Bash\(make:.*\)$",
+        "pattern": "Bash(make:*)",
+        "description": "make",
+    },
+    # wget
+    {
+        "match": r"^Bash\(wget:.*\)$",
+        "pattern": "Bash(wget:*)",
+        "description": "wget",
+    },
+    # 文件操作扩展
+    {
+        "match": r"^Bash\(rm:.*\)$",
+        "pattern": "Bash(rm:*)",
+        "description": "rm",
+    },
+    {
+        "match": r"^Bash\(mv:.*\)$",
+        "pattern": "Bash(mv:*)",
+        "description": "mv",
+    },
+    {
+        "match": r"^Bash\(cp:.*\)$",
+        "pattern": "Bash(cp:*)",
+        "description": "cp",
+    },
+    {
+        "match": r"^Bash\(touch:.*\)$",
+        "pattern": "Bash(touch:*)",
+        "description": "touch",
+    },
+    {
+        "match": r"^Bash\(head:.*\)$",
+        "pattern": "Bash(head:*)",
+        "description": "head",
+    },
+    {
+        "match": r"^Bash\(tail:.*\)$",
+        "pattern": "Bash(tail:*)",
+        "description": "tail",
+    },
+    {
+        "match": r"^Bash\(wc:.*\)$",
+        "pattern": "Bash(wc:*)",
+        "description": "wc",
+    },
+    {
+        "match": r"^Bash\(diff:.*\)$",
+        "pattern": "Bash(diff:*)",
+        "description": "diff",
+    },
+    # 压缩解压
+    {
+        "match": r"^Bash\(tar:.*\)$",
+        "pattern": "Bash(tar:*)",
+        "description": "tar",
+    },
+    {
+        "match": r"^Bash\(zip:.*\)$",
+        "pattern": "Bash(zip:*)",
+        "description": "zip",
+    },
+    {
+        "match": r"^Bash\(unzip:.*\)$",
+        "pattern": "Bash(unzip:*)",
+        "description": "unzip",
+    },
+    # 进程管理
+    {
+        "match": r"^Bash\(ps:.*\)$",
+        "pattern": "Bash(ps:*)",
+        "description": "ps",
+    },
+    {
+        "match": r"^Bash\(kill:.*\)$",
+        "pattern": "Bash(kill:*)",
+        "description": "kill",
+    },
+    {
+        "match": r"^Bash\(top:.*\)$",
+        "pattern": "Bash(top:*)",
+        "description": "top",
+    },
+    # 系统信息
+    {
+        "match": r"^Bash\(which:.*\)$",
+        "pattern": "Bash(which:*)",
+        "description": "which",
+    },
+    {
+        "match": r"^Bash\(uname:.*\)$",
+        "pattern": "Bash(uname:*)",
+        "description": "uname",
+    },
+    {
+        "match": r"^Bash\(date:.*\)$",
+        "pattern": "Bash(date:*)",
+        "description": "date",
+    },
+    {
+        "match": r"^Bash\(env:.*\)$",
+        "pattern": "Bash(env:*)",
+        "description": "env",
+    },
+    {
+        "match": r"^Bash\(echo:.*\)$",
+        "pattern": "Bash(echo:*)",
+        "description": "echo",
+    },
+    {
+        "match": r"^Bash\(sleep:.*\)$",
+        "pattern": "Bash(sleep:*)",
+        "description": "sleep",
+    },
+    # 编辑器/IDE
+    {
+        "match": r"^Bash\(code:.*\)$",
+        "pattern": "Bash(code:*)",
+        "description": "VS Code",
+    },
+    {
+        "match": r"^Bash\(vim:.*\)$",
+        "pattern": "Bash(vim:*)",
+        "description": "vim",
+    },
+    {
+        "match": r"^Bash\(nano:.*\)$",
+        "pattern": "Bash(nano:*)",
+        "description": "nano",
+    },
+    # macOS
+    {
+        "match": r"^Bash\(open:.*\)$",
+        "pattern": "Bash(open:*)",
+        "description": "macOS open",
+    },
+    {
+        "match": r"^Bash\(brew:.*\)$",
+        "pattern": "Bash(brew:*)",
+        "description": "Homebrew",
+    },
+    {
+        "match": r"^Bash\(xcodebuild:.*\)$",
+        "pattern": "Bash(xcodebuild:*)",
+        "description": "xcodebuild",
+    },
+    # Rust
+    {
+        "match": r"^Bash\(cargo (\w+):.*\)$",
+        "pattern": "Bash(cargo {command}:*)",
+        "description": "cargo {command}",
+    },
+    {
+        "match": r"^Bash\(rustc:.*\)$",
+        "pattern": "Bash(rustc:*)",
+        "description": "rustc",
+    },
+    # Java/Gradle/Maven
+    {
+        "match": r"^Bash\(mvn:.*\)$",
+        "pattern": "Bash(mvn:*)",
+        "description": "Maven",
+    },
+    {
+        "match": r"^Bash\(gradle:.*\)$",
+        "pattern": "Bash(gradle:*)",
+        "description": "Gradle",
+    },
+    {
+        "match": r"^Bash\(java:.*\)$",
+        "pattern": "Bash(java:*)",
+        "description": "java",
+    },
+    # Kubernetes
+    {
+        "match": r"^Bash\(kubectl (\w+):.*\)$",
+        "pattern": "Bash(kubectl {command}:*)",
+        "description": "kubectl {command}",
+    },
+    # SSH/SCP
+    {
+        "match": r"^Bash\(ssh:.*\)$",
+        "pattern": "Bash(ssh:*)",
+        "description": "ssh",
+    },
+    {
+        "match": r"^Bash\(scp:.*\)$",
+        "pattern": "Bash(scp:*)",
+        "description": "scp",
+    },
+    # 远程同步
+    {
+        "match": r"^Bash\(rsync:.*\)$",
+        "pattern": "Bash(rsync:*)",
+        "description": "rsync",
+    },
+    # 网络诊断
+    {
+        "match": r"^Bash\(ping:.*\)$",
+        "pattern": "Bash(ping:*)",
+        "description": "ping",
+    },
+    {
+        "match": r"^Bash\(netstat:.*\)$",
+        "pattern": "Bash(netstat:*)",
+        "description": "netstat",
+    },
+    {
+        "match": r"^Bash\(curl:.*\)$",
+        "pattern": "Bash(curl:*)",
+        "description": "curl",
+    },
+    # Python 扩展
+    {
+        "match": r"^Bash\(uv (\w+):.*\)$",
+        "pattern": "Bash(uv {command}:*)",
+        "description": "uv {command}",
+    },
+    {
+        "match": r"^Bash\(poetry (\w+):.*\)$",
+        "pattern": "Bash(poetry {command}:*)",
+        "description": "poetry {command}",
+    },
+    {
+        "match": r"^Bash\(pipx:.*\)$",
+        "pattern": "Bash(pipx:*)",
+        "description": "pipx",
+    },
+    # TypeScript/JavaScript 扩展
+    {
+        "match": r"^Bash\(tsc:.*\)$",
+        "pattern": "Bash(tsc:*)",
+        "description": "TypeScript compiler",
+    },
+    {
+        "match": r"^Bash\(eslint:.*\)$",
+        "pattern": "Bash(eslint:*)",
+        "description": "eslint",
+    },
+    {
+        "match": r"^Bash\(prettier:.*\)$",
+        "pattern": "Bash(prettier:*)",
+        "description": "prettier",
+    },
+    {
+        "match": r"^Bash\(webpack:.*\)$",
+        "pattern": "Bash(webpack:*)",
+        "description": "webpack",
+    },
+    {
+        "match": r"^Bash\(vite:.*\)$",
+        "pattern": "Bash(vite:*)",
+        "description": "vite",
+    },
+    # Ruby
+    {
+        "match": r"^Bash\(bundle (\w+):.*\)$",
+        "pattern": "Bash(bundle {command}:*)",
+        "description": "bundle {command}",
+    },
+    {
+        "match": r"^Bash\(ruby:.*\)$",
+        "pattern": "Bash(ruby:*)",
+        "description": "ruby",
+    },
+    # PHP
+    {
+        "match": r"^Bash\(composer (\w+):.*\)$",
+        "pattern": "Bash(composer {command}:*)",
+        "description": "composer {command}",
+    },
+    {
+        "match": r"^Bash\(php:.*\)$",
+        "pattern": "Bash(php:*)",
+        "description": "php",
+    },
 ]
 
 

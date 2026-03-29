@@ -51,6 +51,55 @@ class TestPermissionPatternExtraction:
         assert result is not None
         assert result["pattern"] == "Bash(tmux new:*)"
 
+    def test_docker_pattern(self):
+        """测试 docker 模式"""
+        result = extract_permission_pattern("Bash(docker run:nginx)")
+        assert result is not None
+        assert result["pattern"] == "Bash(docker run:*)"
+
+    def test_yarn_pattern(self):
+        """测试 yarn 模式"""
+        result = extract_permission_pattern("Bash(yarn install:--dev)")
+        assert result is not None
+        assert result["pattern"] == "Bash(yarn install:*)"
+
+    def test_make_pattern(self):
+        """测试 make 模式"""
+        result = extract_permission_pattern("Bash(make:all)")
+        assert result is not None
+        assert result["pattern"] == "Bash(make:*)"
+
+    def test_cargo_pattern(self):
+        """测试 cargo 模式"""
+        result = extract_permission_pattern("Bash(cargo build:--release)")
+        assert result is not None
+        assert result["pattern"] == "Bash(cargo build:*)"
+
+    def test_kubectl_pattern(self):
+        """测试 kubectl 模式"""
+        result = extract_permission_pattern("Bash(kubectl get:pods)")
+        assert result is not None
+        assert result["pattern"] == "Bash(kubectl get:*)"
+
+    def test_uv_pattern(self):
+        """测试 uv (新 Python 工具) 模式"""
+        result = extract_permission_pattern("Bash(uv pip:install requests)")
+        assert result is not None
+        assert result["pattern"] == "Bash(uv pip:*)"
+
+    def test_brew_pattern(self):
+        """测试 Homebrew 模式"""
+        result = extract_permission_pattern("Bash(brew:install git)")
+        assert result is not None
+        assert result["pattern"] == "Bash(brew:*)"
+
+    def test_file_operations(self):
+        """测试文件操作模式"""
+        for cmd in ["rm", "mv", "cp", "touch", "head", "tail"]:
+            result = extract_permission_pattern(f"Bash({cmd}:somefile)")
+            assert result is not None
+            assert result["pattern"] == f"Bash({cmd}:*)"
+
 
 class TestPermissionDecisionRecording:
     """测试权限决策记录"""

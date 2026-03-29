@@ -504,6 +504,29 @@ class MultiFileReasoner:
 
         return None
 
+    def _normalize_path(self, file_path: str) -> str:
+        """
+        规范化路径（处理相对/绝对路径）
+
+        Args:
+            file_path: 输入路径（可能是相对或绝对）
+
+        Returns:
+            相对于项目路径的路径
+        """
+        path = Path(file_path)
+
+        # 如果已经是相对路径，直接返回
+        if not path.is_absolute():
+            return str(path)
+
+        # 如果是绝对路径，转换为相对路径
+        try:
+            return str(path.relative_to(self.project_path))
+        except ValueError:
+            # 如果路径不在项目目录下，返回原路径
+            return str(path)
+
     def analyze_change(
         self,
         file_path: str,
@@ -521,8 +544,8 @@ class MultiFileReasoner:
         """
         impacts = []
 
-        # 规范化路径
-        file_path = str(Path(file_path).relative_to(self.project_path))
+        # 规范化路径（处理相对/绝对路径）
+        file_path = self._normalize_path(file_path)
 
         # 获取文件节点
         node = self.dependency_graph.get(file_path)
@@ -666,8 +689,11 @@ class MultiFileReasoner:
         """查找相关测试文件"""
         test_files = []
 
-        # 生成可能的测试文件名
+        # 生成可能的测试文件名（基于文件名）
         base = Path(file_path).stem
+        file_dir = Path(file_path).parent
+
+        # 基于文件名的测试
         possible_names = [
             f"{base}.test.ts",
             f"{base}.test.tsx",
@@ -678,19 +704,37 @@ class MultiFileReasoner:
             f"{base}.spec.tsx",
         ]
 
+        # 基于目录名的测试（如 src/auth/login.ts → tests/auth.test.ts）
+        dir_base = file_dir.name if file_dir.name else base
+        dir_test_names = [
+            f"{dir_base}.test.ts",
+            f"{dir_base}.test.tsx",
+            f"{dir_base}.test.js",
+            f"{dir_base}_test.py",
+            f"test_{dir_base}.py",
+            f"{dir_base}.spec.ts",
+            f"{dir_base}.spec.tsx",
+        ]
+
         # 搜索测试目录
         test_dirs = ["tests", "test", "__tests__", "spec"]
 
         for test_dir in test_dirs:
+            # 基于文件名
             for name in possible_names:
+                candidate = f"{test_dir}/{name}"
+                if candidate in self.dependency_graph:
+                    test_files.append(candidate)
+            # 基于目录名
+            for name in dir_test_names:
                 candidate = f"{test_dir}/{name}"
                 if candidate in self.dependency_graph:
                     test_files.append(candidate)
 
         # 同目录下的测试文件
-        file_dir = str(Path(file_path).parent)
-        for name in possible_names:
-            candidate = f"{file_dir}/{name}"
+        file_dir_str = str(file_dir)
+        for name in possible_names + dir_test_names:
+            candidate = f"{file_dir_str}/{name}"
             if candidate in self.dependency_graph:
                 test_files.append(candidate)
 
@@ -768,7 +812,7 @@ class MultiFileReasoner:
         Returns:
             相关文件列表
         """
-        file_path = str(Path(file_path).relative_to(self.project_path))
+        file_path = self._normalize_path(file_path)
 
         related = set()
         to_visit = [(file_path, 0)]
