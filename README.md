@@ -55,6 +55,7 @@
 ```
 
 **架构优势**：
+
 - ✅ 清晰的层次分离
 - ✅ 通用能力与基础设施分离
 - ✅ 符合认知科学的"感知-认知-元认知"模型
@@ -67,15 +68,18 @@
 ## 📦 技术栈
 
 ### 核心语言
+
 - **Python 3.11+**: 主要实现语言
 - **PyTorch**: 深度学习框架
 
 ### 机器学习
+
 - **PyTorch**: 深度学习框架
 - **Transformers**: LLM 集成
 - **Stable-Baselines3**: 强化学习（可选）
 
 ### 工具集成
+
 - **Docker**: 代码执行沙箱（可选）
 - **LLM API**: Anthropic Claude API
 
@@ -129,7 +133,32 @@ claude-code-enhancement/
 
 ## 🚀 快速开始
 
-### 安装
+### ⚡ 一键增强 Claude Code (推荐)
+
+```bash
+# 一行命令安装增强配置
+curl -fsSL https://raw.githubusercontent.com/liogogogo/claude-code-enhancement/main/config/install.sh | bash
+
+# 生效别名
+source ~/.zshrc  # 或 source ~/.bashrc
+
+# 使用短命令启动
+cc
+```
+
+增强功能：
+
+- 28+ 常用命令自动允许（无需确认）
+- 自动格式化（prettier）
+- 危险命令拦截（rm -rf, drop table 等）
+- 任务完成提示音
+- `cc` 别名（跳过权限确认）
+
+详见 [config/README.md](config/README.md)
+
+---
+
+### 📦 完整安装 (Python 项目)
 
 ```bash
 # 克隆项目
@@ -216,13 +245,13 @@ result = engine.monitor_and_adapt(
 
 ## 📊 性能目标
 
-| 指标 | 当前 | 目标 | 提升 |
-|------|------|------|------|
-| **HumanEval pass@1** | ~60% | 85% | +25% |
-| **平均修复时间** | 5min | 2min | -60% |
-| **用户满意度** | 4.2/5 | 4.8/5 | +14% |
-| **任务成功率** | 75% | 95% | +20% |
-| **跨域适应样本需求** | 100% | 10% | -90% |
+| 指标                 | 当前  | 目标  | 提升 |
+| -------------------- | ----- | ----- | ---- |
+| **HumanEval pass@1** | ~60%  | 85%   | +25% |
+| **平均修复时间**     | 5min  | 2min  | -60% |
+| **用户满意度**       | 4.2/5 | 4.8/5 | +14% |
+| **任务成功率**       | 75%   | 95%   | +20% |
+| **跨域适应样本需求** | 100%  | 10%   | -90% |
 
 ---
 
