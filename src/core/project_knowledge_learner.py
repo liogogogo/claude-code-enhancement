@@ -138,8 +138,10 @@ class ProjectKnowledgeLearner:
 
     def _get_project_id(self) -> str:
         """获取项目唯一 ID"""
-        # 使用路径的 hash 作为 ID
-        return str(abs(hash(str(self.project_path))))[:8]
+        # 使用路径的稳定 hash（md5）
+        import hashlib
+        path_str = str(self.project_path)
+        return hashlib.md5(path_str.encode()).hexdigest()[:8]
 
     def learn(self) -> ProjectKnowledge:
         """
