@@ -1,6 +1,6 @@
 # Claude Code Enhancement
 
-> 让 Claude Code 记住你的偏好，理解你的项目，不重复犯错
+> 让 Claude Code **记住你**、**理解你的项目**、**不再重复犯错**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
