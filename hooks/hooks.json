@@ -1,6 +1,41 @@
 {
-  "description": "Claude Code Enhancement - Permission Learning Hooks",
+  "description": "Claude Code Enhancement - 闭环 Hooks 配置",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PROJECT_ROOT}/hooks/session_start_hook.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PROJECT_ROOT}/hooks/permission_learning_hook.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PROJECT_ROOT}/hooks/permission_learning_hook.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "permission_prompt",
