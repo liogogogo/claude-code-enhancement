@@ -1,87 +1,177 @@
-# Claude Code 增强系统
+# Claude Code Enhancement
 
-> **基于**: ICLR 2025 "A SELF-IMPROVING CODING AGENT" 等前沿研究
-> **目标**: 让 Claude Code 具备更强的编码能力和自适应学习能力
-> **版本**: 2.0.0（架构重构版）
-> **许可证**: MIT
+> 让 Claude Code 记住你的偏好，理解你的项目，不重复犯错
 
----
-
-## 🎯 项目概述
-
-本项目旨在实现一个**四层自我进化架构**，让 Claude Code 这样的 AI 编码助手能够：
-
-1. **基础设施**（Layer 0）：提供工具封装（Docker、Linter、测试框架）
-2. **感知行动**（Layer 1）：与环境交互（观察、执行、反馈）
-3. **认知能力**（Layer 2）：通用智能能力（推理、学习、迁移、记忆）
-4. **元认知**（Layer 3）：自我进化（元学习、持续学习、自我反思）
-
-**✨ 核心创新**：清晰区分**通用能力**（Layer 2/3）和**基础设施**（Layer 0/1），使认知能力可迁移到任何领域。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Tests](https://img.shields.io/badge/tests-41%20passing-brightgreen.svg)](tests/)
 
 ---
 
-## 🏗️ 核心架构（v2.0）
+## 🎯 这个项目适合谁？
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  Layer 3: 元认知层（Meta-Cognitive Layer）                  │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │  自我反思 | 元学习 | 持续学习 | 策略优化 | 进化追踪    │ │
-│  │  核心: 关于"学习"的学习，自我进化                        │ │
-│  │  通用性: ✅ 完全通用                                    │ │
-│  └─────────────────────────────────────────────────────────┘ │
-├─────────────────────────────────────────────────────────────┤
-│  Layer 2: 认知能力层（Cognitive Layer）                     │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │  推理 | 学习 | 迁移 | 记忆 | 纠错                       │ │
-│  │  核心: 通用智能能力                                      │ │
-│  │  通用性: ✅ 完全通用                                    │ │
-│  └─────────────────────────────────────────────────────────┘ │
-├─────────────────────────────────────────────────────────────┤
-│  Layer 1: 感知行动层（Perception-Action Layer）            │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │  观察 | 执行 | 反馈（与环境交互的接口）                 │ │
-│  │  核心: 感知-行动循环                                    │ │
-│  │  通用性: ⚠️ 接口通用，实现依赖场景                      │ │
-│  └─────────────────────────────────────────────────────────┘ │
-├─────────────────────────────────────────────────────────────┤
-│  Layer 0: 基础设施层（Infrastructure Layer）                │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │  Docker | Linter | 测试框架（底层工具）                 │ │
-│  │  核心: 工具封装，平台依赖                                │ │
-│  │  通用性: ❌ 特定于开发场景                              │ │
-│  └─────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
+### ✅ 适合你，如果：
+
+| 场景                     | 痛点                       | 我们解决                 |
+| ------------------------ | -------------------------- | ------------------------ |
+| **每天用 Claude Code**   | 每次都要重新解释项目背景   | ✅ 项目知识自动学习      |
+| **频繁切换项目**         | 不同项目的配置要手动设置   | ✅ 一键切换 + 记忆持久化 |
+| **修复过的问题又出现**   | Claude 会重复犯同样的错    | ✅ 错误知识库，不二过    |
+| **改代码怕影响其他模块** | 不知道改动会影响哪些文件   | ✅ 多文件推理，预测影响  |
+| **长对话上下文丢失**     | 聊多了 Claude 就忘了前面的 | ✅ 智能上下文管理        |
+| **权限确认太繁琐**       | 每个命令都要点确认         | ✅ 28+ 命令自动允许      |
+
+### ❌ 可能不适合，如果：
+
+- 只是偶尔使用 Claude Code
+- 项目非常简单（单文件脚本）
+- 不想安装额外依赖
+
+---
+
+## 🚀 5 分钟快速开始
+
+### 方式一：一键增强（推荐）
+
+```bash
+# 安装增强配置
+curl -fsSL https://raw.githubusercontent.com/liogogogo/claude-code-enhancement/main/config/install.sh | bash
+
+# 生效
+source ~/.zshrc
+
+# 使用
+cc  # 代替 claude，跳过权限确认
 ```
 
-**架构优势**：
+**立即获得**：
 
-- ✅ 清晰的层次分离
-- ✅ 通用能力与基础设施分离
-- ✅ 符合认知科学的"感知-认知-元认知"模型
-- ✅ Layer 2/3 可用于任何领域，不限于软件开发
+- ✅ 28+ 常用命令自动允许
+- ✅ 自动代码格式化
+- ✅ 危险命令拦截
+- ✅ 任务完成提示音
 
-详见 [完整架构文档](docs/ARCHITECTURE_V2.md)
+### 方式二：完整安装（高级功能）
+
+```bash
+git clone https://github.com/liogogogo/claude-code-enhancement.git
+cd claude-code-enhancement
+pip install -e .
+
+# 可选：向量搜索依赖
+pip install chromadb sentence-transformers
+```
 
 ---
 
-## 📦 技术栈
+## 📋 功能对比
 
-### 核心语言
+| 功能         | 原生 Claude Code | + 本项目        |
+| ------------ | ---------------- | --------------- |
+| 记住用户偏好 | ❌ 每次重置      | ✅ 跨会话持久化 |
+| 记住项目结构 | ❌ 需要重复解释  | ✅ 自动学习     |
+| 错误不重犯   | ❌ 会重复犯错    | ✅ 错误知识库   |
+| 改动影响分析 | ⚠️ 有限          | ✅ 多文件推理   |
+| 长对话管理   | ⚠️ 会遗忘        | ✅ 智能压缩     |
+| 命令权限     | ⚠️ 每次确认      | ✅ 自动允许     |
 
-- **Python 3.11+**: 主要实现语言
-- **PyTorch**: 深度学习框架
+---
 
-### 机器学习
+## 💡 使用场景
 
-- **PyTorch**: 深度学习框架
-- **Transformers**: LLM 集成
-- **Stable-Baselines3**: 强化学习（可选）
+### 场景 1：大型项目开发
 
-### 工具集成
+```python
+from src.core import create_enhancer
 
-- **Docker**: 代码执行沙箱（可选）
-- **LLM API**: Anthropic Claude API
+enhancer = create_enhancer("/path/to/large-project")
+
+# 1. 自动学习项目结构
+stats = enhancer.learn_project()
+# {files_analyzed: 156, patterns_found: 23, ...}
+
+# 2. 智能搜索代码
+results = enhancer.search_code("authentication flow", n_results=10)
+
+# 3. 分析修改影响
+impacts = enhancer.analyze_change("auth/login.ts", "add MFA")
+for impact in impacts:
+    print(f"{impact.file_path}: {impact.impact_level.value}")
+# middleware/auth.ts: high
+# tests/auth.test.ts: high
+# api/user.ts: medium
+```
+
+### 场景 2：多项目切换
+
+```python
+from src.memory import get_memory
+
+memory = get_memory()
+
+# 项目 A 的偏好
+memory.set_preference("coding_style", "indentation", "2 spaces")
+memory.set_preference("tools", "formatter", "prettier")
+
+# 项目 B 的偏好（自动切换）
+memory.set_preference("coding_style", "indentation", "4 spaces")
+memory.set_preference("tools", "formatter", "black")
+
+# Claude 会记住每个项目的偏好
+```
+
+### 场景 3：错误修复知识积累
+
+```python
+# 第一次遇到错误
+memory.record_error_fix(
+    error_pattern="ModuleNotFoundError: No module named 'requests'",
+    error_type="ImportError",
+    fix_description="Install the missing package",
+    fix_code="pip install requests",
+)
+
+# 下次遇到类似错误
+fixes = memory.find_fix_for_error("ModuleNotFoundError: requests")
+# 返回之前的修复方案，Claude 不用再猜
+```
+
+---
+
+## 🏗️ 架构概览
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   用户层                             │
+│   cc 命令 | Claude Code CLI | API 调用              │
+└─────────────────────┬───────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────┐
+│              增强层 (本项目)                         │
+├─────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐ │
+│  │ 上下文管理  │  │ 多文件推理  │  │ 个性化记忆  │ │
+│  │ (RAG)      │  │ (依赖分析)  │  │ (持久化)    │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘ │
+├─────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐ │
+│  │ 项目知识    │  │ 错误学习    │  │ 工作流模板  │ │
+│  │ (自动学习)  │  │ (不重犯)    │  │ (自动化)    │ │
+│  └─────────────┘  └─────────────┘  └─────────────┘ │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📊 项目成熟度
+
+| 维度         | 状态              | 说明                        |
+| ------------ | ----------------- | --------------------------- |
+| **核心功能** | ✅ 8 个模块       | 上下文、推理、记忆、知识... |
+| **测试覆盖** | ✅ 41 个测试      | 单元 + 集成测试             |
+| **CI/CD**    | ✅ GitHub Actions | 自动测试 + 构建             |
+| **文档**     | ✅ 完整           | API + 快速开始 + 架构       |
+| **开源合规** | ✅ 100%           | LICENSE, CONTRIBUTING, CoC  |
 
 ---
 
@@ -89,232 +179,81 @@
 
 ```
 claude-code-enhancement/
-├── README.md                          ← 本文件
-├── LICENSE                            ← MIT 许可证
-├── pyproject.toml                     ← Python 配置
-├── requirements.txt                   ← Python 依赖
-├── docs/
-│   ├── ARCHITECTURE_V2.md             ← 架构文档（v2.0）
-│   └── LAYER_2_3_ENHANCEMENTS.md      ← Layer 2/3 详细说明
+├── config/                 # 一键安装配置
+│   ├── install.sh
+│   └── settings.template.json
 ├── src/
-│   ├── layer0/                        ← 基础设施层（工具封装）
-│   │   ├── execution_sandbox.py      ← Docker 执行沙箱
-│   │   ├── linting_tools.py          ← Linter 工具集
-│   │   └── test_frameworks.py        ← 测试框架集成
-│   │
-│   ├── layer1/                        ← 感知行动层（环境交互）
-│   │   ├── observation.py            ← 观察器
-│   │   ├── action.py                 ← 执行器
-│   │   └── feedback.py               ← 反馈收集器
-│   │
-│   ├── layer2/                        ← 认知能力层（通用智能）
-│   │   ├── advanced_reasoning.py     ← 高级推理（因果、反事实）
-│   │   ├── knowledge_transfer.py     ← 知识迁移（零样本、少样本）
-│   │   ├── error_learning.py         ← 错误学习
-│   │   ├── contrastive_learning.py   ← 对比学习
-│   │   └── feedback_loop.py          ← 反馈循环
-│   │
-│   ├── layer3/                        ← 元认知层（自我进化）
-│   │   ├── continuous_learning.py    ← 持续学习（克服遗忘）
-│   │   ├── adaptation_engine.py      ← 适应引擎
-│   │   └── evolution_tracker.py      ← 进化追踪
-│   │
-│   └── core/                          ← 核心模块（整合架构）
-│       ├── meta_learning.py          ← MAML 元学习
-│       ├── strategy_optimizer.py     ← PPO 策略优化
-│       └── self_modification.py      ← 自我修改引擎
-│
-├── tests/                             ← 测试
-├── examples/                          ← 使用示例
-└── data/                              ← 数据（知识库、检查点等）
+│   ├── core/               # 核心模块
+│   │   ├── context_manager.py      # 上下文管理
+│   │   ├── multi_file_reasoning.py # 多文件推理
+│   │   ├── project_knowledge.py    # 项目知识
+│   │   └── unified.py              # 统一接口
+│   ├── memory/             # 记忆系统
+│   │   └── personal_memory.py
+│   └── layer0-3/           # 四层架构
+├── tests/                  # 测试 (41 个)
+├── docs/                   # 文档
+└── Makefile               # 常用命令
 ```
 
 ---
 
-## 🚀 快速开始
+## 📖 文档
 
-### ⚡ 一键增强 Claude Code (推荐)
+| 文档                                | 内容           |
+| ----------------------------------- | -------------- |
+| [快速开始](docs/QUICK_START.md)     | 5 分钟上手指南 |
+| [API 参考](docs/API.md)             | 完整 API 文档  |
+| [架构设计](docs/ARCHITECTURE_V2.md) | 四层架构详解   |
+| [贡献指南](CONTRIBUTING.md)         | 如何贡献代码   |
+
+---
+
+## 🔧 常用命令
 
 ```bash
-# 一行命令安装增强配置
-curl -fsSL https://raw.githubusercontent.com/liogogogo/claude-code-enhancement/main/config/install.sh | bash
-
-# 生效别名
-source ~/.zshrc  # 或 source ~/.bashrc
-
-# 使用短命令启动
-cc
+make install     # 安装依赖
+make test        # 运行测试
+make test-cov    # 测试 + 覆盖率
+make lint        # 代码检查
+make format      # 格式化代码
+make build       # 构建发布包
 ```
-
-增强功能：
-
-- 28+ 常用命令自动允许（无需确认）
-- 自动格式化（prettier）
-- 危险命令拦截（rm -rf, drop table 等）
-- 任务完成提示音
-- `cc` 别名（跳过权限确认）
-
-详见 [config/README.md](config/README.md)
-
----
-
-### 📦 完整安装 (Python 项目)
-
-```bash
-# 克隆项目
-git clone https://github.com/liogogogo/claude-code-enhancement.git
-cd claude-code-enhancement
-
-# 创建虚拟环境
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 安装依赖
-pip install -r requirements.txt
-```
-
-### 使用示例
-
-#### 1. 感知行动层（Layer 1）
-
-```python
-from src.layer1 import Observer, Actor, FeedbackCollector
-
-# 观察环境状态
-observer = Observer()
-result = observer.observe(
-    observation_type=ObservationType.CODE_STATE,
-    context={"project_path": "/path/to/project"},
-)
-
-# 执行操作
-actor = Actor()
-result = actor.act(
-    action_type=ActionType.CODE_GENERATION,
-    parameters={"description": "创建一个 REST API"},
-)
-
-# 收集反馈
-collector = FeedbackCollector()
-feedback = collector.collect_feedback(context={"last_action": result})
-```
-
-#### 2. 认知能力层（Layer 2）
-
-```python
-from src.layer2 import MultiStepReasoner, KnowledgeTransfer
-
-# 高级推理（因果分析）
-reasoner = MultiStepReasoner()
-chain = reasoner.reason(
-    problem="为什么性能下降了？",
-    context={"metrics": {...}},
-    reasoning_type=ReasoningType.CAUSAL,
-)
-
-# 知识迁移（少样本学习）
-transfer = KnowledgeTransfer(model)
-result = transfer.few_shot_transfer(
-    target_data=new_domain_data,
-    k_shot=5,  # 仅用 5 个样本
-)
-```
-
-#### 3. 元认知层（Layer 3）
-
-```python
-from src.layer3 import ContinualLearning, AdaptationEngine
-
-# 持续学习（克服灾难性遗忘）
-continual_learner = ContinualLearning(
-    model=model,
-    strategy=LearningStrategy.EWC,
-)
-for task in task_sequence:
-    continual_learner.learn_task(task)
-
-# 适应引擎（自动优化）
-engine = AdaptationEngine()
-result = engine.monitor_and_adapt(
-    current_metrics={"accuracy": 0.75},
-    thresholds={"accuracy": 0.80},
-)
-```
-
----
-
-## 📊 性能目标
-
-| 指标                 | 当前  | 目标  | 提升 |
-| -------------------- | ----- | ----- | ---- |
-| **HumanEval pass@1** | ~60%  | 85%   | +25% |
-| **平均修复时间**     | 5min  | 2min  | -60% |
-| **用户满意度**       | 4.2/5 | 4.8/5 | +14% |
-| **任务成功率**       | 75%   | 95%   | +20% |
-| **跨域适应样本需求** | 100%  | 10%   | -90% |
-
----
-
-## 🔬 研究基础
-
-### 核心论文
-
-1. **[ICLR 2025] A SELF-IMPROVING CODING AGENT**
-   - 自我改进架构
-
-2. **[ICLR 2025] TRAINING LANGUAGE MODELS TO SELF-CORRECT**
-   - 自我纠错训练
-
-3. **[NeurIPS 2024] Code World Models**
-   - 代码世界模型
-
-4. **MAML (Model-Agnostic Meta-Learning)**
-   - 快速适应算法
-
-5. **EWC (Elastic Weight Consolidation)**
-   - 克服灾难性遗忘
-
----
-
-## 🎯 关键特性
-
-### ✅ 通用能力（Layer 2/3）
-
-- **高级推理**: 因果推理、反事实推理、多步推理
-- **知识迁移**: 跨域迁移、零样本/少样本学习
-- **持续学习**: 克服灾难性遗忘、终身学习
-- **元学习**: 快速适应新任务（MAML）
-
-这些能力是**完全通用的**，可应用于任何领域！
-
-### ⚠️ 场景特定（Layer 0/1）
-
-- **代码执行**: Docker 沙箱
-- **代码质量**: Linter 集成
-- **测试验证**: 测试框架
-
-这些是**特定于开发场景**的工具。
 
 ---
 
 ## 🤝 贡献
 
-欢迎贡献！请查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详情。
+欢迎贡献！请查看 [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
 ## 📄 许可证
 
-MIT License - 详见 [LICENSE](LICENSE) 文件
+[MIT License](LICENSE)
 
 ---
 
-## 📞 联系
+## ❓ 常见问题
 
-- **作者**: liocc
-- **项目**: Claude Code Enhancement System
-- **邮箱**: [GitHub Issues](https://github.com/liogogogo/claude-code-enhancement/issues)
+### Q: 和原版 Claude Code 冲突吗？
+
+**A**: 不冲突。本项目是增强层，可以随时开启/关闭。
+
+### Q: 需要额外付费吗？
+
+**A**: 不需要。本项目免费开源，使用你的 Claude API。
+
+### Q: 支持哪些语言？
+
+**A**: Python, TypeScript, JavaScript, Go, Rust 的代码分析。
+
+### Q: 数据存储在哪里？
+
+**A**: 本地 `~/.claude/` 目录，不会上传到任何服务器。
 
 ---
 
-**🎉 让 Claude Code 变得更智能！**
+**GitHub**: https://github.com/liogogogo/claude-code-enhancement
+
+**让 Claude Code 更懂你** 🚀
