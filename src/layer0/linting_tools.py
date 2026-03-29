@@ -1,6 +1,8 @@
 """
-实时 Linting 反馈 - Layer 1 核心模块
-提供实时的代码质量反馈
+Linting 工具集 - Layer 0: 基础设施层
+
+封装各种 Linter 工具（golangci-lint, swiftlint, ruff, eslint等）
+纯工具封装，无智能能力
 """
 
 import subprocess

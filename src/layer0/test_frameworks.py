@@ -1,6 +1,8 @@
 """
-自动测试验证 - Layer 1 核心模块
-自动执行测试并验证代码正确性
+测试框架集成 - Layer 0: 基础设施层
+
+封装各种测试框架（go test, pytest, swift test, jest等）
+纯工具封装，无智能能力
 """
 
 import subprocess
