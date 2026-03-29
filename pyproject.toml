@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+requires-python = ">=3.11"
+
+[project]
+name = "claude-code-enhancement"
+version = "1.0.0"
+description = "Claude Code 自我增强系统 - 基于 ICLR 2025 顶会论文"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+authors = [
+    {name = "liocc", email = "liocc@example.com"}
+]
+keywords = [
+    "claude",
+    "ai",
+    "code-generation",
+    "self-improvement",
+    "meta-learning",
+    "reinforcement-learning",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+    "anthropic>=0.18.0",
+    "openai>=1.0.0",
+    "torch>=2.0.0",
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
+    "docker>=6.0.0",
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "jupyter>=1.0.0",
+    "ipython>=8.0.0",
+    "pre-commit>=3.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/liogogogo/claude-code-enhancement"
+Documentation = "https://github.com/liogogogo/claude-code-enhancement/docs"
+Repository = "https://github.com/liogogogo/claude-code-enhancement"
+"Bug Tracker" = "https://github.com/liogogogo/claude-code-enhancement/issues"
+
+[tool.setuptools]
+packages = ["src.*"]
+
+[tool.black]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
