@@ -25,6 +25,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.core.context_manager import create_context_manager
+from src.core.project_knowledge_learner import ProjectKnowledgeLearner
 
 # 调试日志
 DEBUG_LOG = os.path.expanduser("/tmp/session-start-debug.log")
@@ -110,6 +111,45 @@ def main():
             print(f"- 已索引文件: {stats['indexed_files']}")
             print(f"- 代码块: {stats['total_chunks']}")
             print(f"- 向量存储: {'启用' if stats['has_vector_store'] else '内存模式'}")
+
+    except Exception as e:
+        debug_log(f"Error: {e}")
+        # 不阻塞会话启动
+        print(f"\n# 项目索引失败: {e}")
+
+    # 学习项目知识
+    try:
+        debug_log("Learning project knowledge...")
+        knowledge_learner = ProjectKnowledgeLearner(project_path)
+
+        # 检查是否已有知识
+        existing_knowledge = knowledge_learner.load_knowledge()
+
+        if existing_knowledge:
+            debug_log(f"Project knowledge exists: {existing_knowledge.project_name}")
+            print(f"\n# 项目知识已加载")
+            if existing_knowledge.naming:
+                print(f"- 命名规范: {existing_knowledge.naming.function_style}")
+            if existing_knowledge.structure and existing_knowledge.structure.framework:
+                print(f"- 框架: {existing_knowledge.structure.framework}")
+            print(f"- 查看: `python3 hooks/project_knowledge_hook.py . --guide`")
+        else:
+            # 学习项目知识
+            knowledge = knowledge_learner.learn()
+            debug_log(f"Project knowledge learned: {knowledge.project_name}")
+
+            print(f"\n# 项目知识学习完成")
+            if knowledge.structure:
+                print(f"- 类型: {knowledge.structure.type}")
+                if knowledge.structure.framework:
+                    print(f"- 框架: {knowledge.structure.framework}")
+            if knowledge.naming:
+                print(f"- 命名风格: {knowledge.naming.function_style}")
+            if knowledge.style:
+                print(f"- 缩进: {knowledge.style.indent_size} 空格")
+
+    except Exception as e:
+        debug_log(f"Knowledge learning error: {e}")
 
     except Exception as e:
         debug_log(f"Error: {e}")

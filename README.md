@@ -88,6 +88,16 @@ python3 hooks/permission_report.py
 python3 hooks/permission_report.py --suggest
 ```
 
+**Project Knowledge Learner**:
+
+```bash
+# Learn project style (auto-runs on session start)
+python3 -c "from src.core.project_knowledge_learner import learn_project; learn_project('.')"
+
+# View style guide
+python3 hooks/project_knowledge_hook.py . --guide
+```
+
 **Apply Config Template**:
 
 ```bash

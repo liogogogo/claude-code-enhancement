@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": "python3 ${CLAUDE_PROJECT_ROOT}/hooks/session_start_hook.py",
-            "timeout": 30
+            "timeout": 60
           }
         ]
       }
@@ -19,6 +19,16 @@
           {
             "type": "command",
             "command": "python3 ${CLAUDE_PROJECT_ROOT}/hooks/permission_learning_hook.py",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PROJECT_ROOT}/hooks/project_knowledge_hook.py",
             "timeout": 5
           }
         ]
