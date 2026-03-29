@@ -34,6 +34,7 @@ class MemoryType(Enum):
     ERROR_FIX = "error_fix"  # 错误修复
     WORKFLOW = "workflow"  # 工作流模板
     CONTEXT = "context"  # 会话上下文
+    PERMISSION = "permission"  # 权限决策
 
 
 class PreferenceCategory(Enum):
@@ -187,6 +188,232 @@ class ErrorFix:
 
 
 @dataclass
+class PermissionDecision:
+    """权限决策记录"""
+
+    permission: str  # 原始权限字符串
+    action: str  # "allow" | "deny"
+    timestamp: datetime = field(default_factory=datetime.now)
+    context: dict = field(default_factory=dict)  # 上下文信息
+
+    def to_dict(self) -> dict:
+        return {
+            "permission": self.permission,
+            "action": self.action,
+            "timestamp": self.timestamp.isoformat(),
+            "context": self.context,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "PermissionDecision":
+        return cls(
+            permission=data["permission"],
+            action=data["action"],
+            timestamp=datetime.fromisoformat(data["timestamp"]),
+            context=data.get("context", {}),
+        )
+
+
+@dataclass
+class PermissionPattern:
+    """权限模式（归纳后的通用模式）"""
+
+    pattern: str  # 通配符模式，如 "Bash(git:*)"
+    description: str  # 描述
+    count: int = 0  # 使用次数
+    examples: list[str] = field(default_factory=list)  # 示例
+    first_seen: Optional[datetime] = None
+    last_seen: Optional[datetime] = None
+
+    def to_dict(self) -> dict:
+        return {
+            "pattern": self.pattern,
+            "description": self.description,
+            "count": self.count,
+            "examples": self.examples[:10],  # 最多保留10个示例
+            "first_seen": self.first_seen.isoformat() if self.first_seen else None,
+            "last_seen": self.last_seen.isoformat() if self.last_seen else None,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "PermissionPattern":
+        return cls(
+            pattern=data["pattern"],
+            description=data.get("description", ""),
+            count=data.get("count", 0),
+            examples=data.get("examples", []),
+            first_seen=datetime.fromisoformat(data["first_seen"])
+            if data.get("first_seen") else None,
+            last_seen=datetime.fromisoformat(data["last_seen"])
+            if data.get("last_seen") else None,
+        )
+
+
+# 权限模式归纳规则
+PERMISSION_PATTERN_RULES = [
+    # Git 相关
+    {
+        "match": r"^Bash\(git (\w+):.*\)$",
+        "pattern": "Bash(git {command}:*)",
+        "description": "Git {command}",
+    },
+    # Python 相关
+    {
+        "match": r"^Bash\(pip install:.*\)$",
+        "pattern": "Bash(pip install:*)",
+        "description": "pip install",
+    },
+    {
+        "match": r"^Bash\(pip3 install:.*\)$",
+        "pattern": "Bash(pip3 install:*)",
+        "description": "pip3 install",
+    },
+    {
+        "match": r"^Bash\(python -m pytest:.*\)$",
+        "pattern": "Bash(python -m pytest:*)",
+        "description": "pytest",
+    },
+    {
+        "match": r"^Bash\(python:.*\)$",
+        "pattern": "Bash(python:*)",
+        "description": "python",
+    },
+    {
+        "match": r"^Bash\(python3:.*\)$",
+        "pattern": "Bash(python3:*)",
+        "description": "python3",
+    },
+    {
+        "match": r"^Bash\(\.venv/bin/python:.*\)$",
+        "pattern": "Bash(.venv/bin/python:*)",
+        "description": "venv python",
+    },
+    # 文件操作
+    {
+        "match": r"^Bash\(mkdir:.*\)$",
+        "pattern": "Bash(mkdir:*)",
+        "description": "mkdir",
+    },
+    {
+        "match": r"^Bash\(ls:.*\)$",
+        "pattern": "Bash(ls:*)",
+        "description": "ls",
+    },
+    {
+        "match": r"^Bash\(find:.*\)$",
+        "pattern": "Bash(find:*)",
+        "description": "find",
+    },
+    {
+        "match": r"^Bash\(grep:.*\)$",
+        "pattern": "Bash(grep:*)",
+        "description": "grep",
+    },
+    {
+        "match": r"^Bash\(cat:.*\)$",
+        "pattern": "Bash(cat:*)",
+        "description": "cat",
+    },
+    # GitHub CLI
+    {
+        "match": r"^Bash\(gh (\w+):.*\)$",
+        "pattern": "Bash(gh {command}:*)",
+        "description": "gh {command}",
+    },
+    # tmux
+    {
+        "match": r"^Bash\(tmux (\w+):.*\)$",
+        "pattern": "Bash(tmux {command}:*)",
+        "description": "tmux {command}",
+    },
+    # curl
+    {
+        "match": r"^Bash\(curl:.*\)$",
+        "pattern": "Bash(curl:*)",
+        "description": "curl",
+    },
+    # cd
+    {
+        "match": r"^Bash\(cd:.*\)$",
+        "pattern": "Bash(cd:*)",
+        "description": "cd",
+    },
+    # chmod
+    {
+        "match": r"^Bash\(chmod:.*\)$",
+        "pattern": "Bash(chmod:*)",
+        "description": "chmod",
+    },
+    # source
+    {
+        "match": r"^Bash\(source:.*\)$",
+        "pattern": "Bash(source:*)",
+        "description": "source",
+    },
+    # Docker
+    {
+        "match": r"^Bash\(docker (\w+):.*\)$",
+        "pattern": "Bash(docker {command}:*)",
+        "description": "docker {command}",
+    },
+    # npm/node
+    {
+        "match": r"^Bash\(npm:.*\)$",
+        "pattern": "Bash(npm:*)",
+        "description": "npm",
+    },
+    {
+        "match": r"^Bash\(npx:.*\)$",
+        "pattern": "Bash(npx:*)",
+        "description": "npx",
+    },
+    {
+        "match": r"^Bash\(node:.*\)$",
+        "pattern": "Bash(node:*)",
+        "description": "node",
+    },
+    # Go
+    {
+        "match": r"^Bash\(go (\w+):.*\)$",
+        "pattern": "Bash(go {command}:*)",
+        "description": "go {command}",
+    },
+]
+
+
+def extract_permission_pattern(permission: str) -> Optional[dict]:
+    """
+    从具体权限中提取通用模式
+
+    Args:
+        permission: 权限字符串，如 "Bash(git push:origin main)"
+
+    Returns:
+        包含 pattern 和 description 的字典，或 None
+    """
+    import re
+
+    for rule in PERMISSION_PATTERN_RULES:
+        match = re.match(rule["match"], permission)
+        if match:
+            groups = match.groups()
+            pattern = rule["pattern"]
+            description = rule["description"]
+
+            # 替换占位符
+            if "{command}" in pattern and groups:
+                pattern = pattern.replace("{command}", groups[0])
+                description = description.replace("{command}", groups[0])
+
+            return {
+                "pattern": pattern,
+                "description": description,
+            }
+
+    return None
+
+
+@dataclass
 class WorkflowTemplate:
     """工作流模板"""
 
@@ -234,6 +461,7 @@ class PersonalMemory:
     - 保存项目历史
     - 错误修复知识库
     - 工作流模板
+    - 权限决策记录与学习
     """
 
     def __init__(self, memory_dir: Optional[Path] = None):
@@ -253,6 +481,10 @@ class PersonalMemory:
         self.error_fixes: list[ErrorFix] = []
         self.workflows: dict[str, WorkflowTemplate] = {}
 
+        # 权限相关存储
+        self.permission_decisions: dict[str, PermissionDecision] = {}
+        self.permission_patterns: dict[str, PermissionPattern] = {}
+
         # 加载已有记忆
         self._load_all()
 
@@ -263,6 +495,7 @@ class PersonalMemory:
         self._load_projects()
         self._load_error_fixes()
         self._load_workflows()
+        self._load_permissions()
 
     # ==================== 用户偏好 ====================
 
@@ -648,6 +881,157 @@ class PersonalMemory:
             wf.last_used = datetime.now()
             self._save_workflows()
 
+    # ==================== 权限决策记录 ====================
+
+    def _load_permissions(self):
+        """加载权限决策记录"""
+        perms_file = self.memory_dir / "permissions.json"
+        if not perms_file.exists():
+            return
+
+        try:
+            data = json.loads(perms_file.read_text())
+            for perm, dec_data in data.get("decisions", {}).items():
+                self.permission_decisions[perm] = PermissionDecision.from_dict(dec_data)
+            for pattern, pat_data in data.get("patterns", {}).items():
+                self.permission_patterns[pattern] = PermissionPattern.from_dict(pat_data)
+        except Exception as e:
+            print(f"Warning: Failed to load permissions: {e}")
+
+    def _save_permissions(self):
+        """保存权限决策记录"""
+        perms_file = self.memory_dir / "permissions.json"
+        data = {
+            "decisions": {k: v.to_dict() for k, v in self.permission_decisions.items()},
+            "patterns": {k: v.to_dict() for k, v in self.permission_patterns.items()},
+        }
+        perms_file.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+
+    def record_permission_decision(
+        self,
+        permission: str,
+        action: str,
+        context: Optional[dict] = None,
+    ) -> None:
+        """
+        记录权限决策
+
+        Args:
+            permission: 权限字符串，如 "Bash(git push:origin main)"
+            action: "allow" | "deny"
+            context: 上下文信息
+        """
+        now = datetime.now()
+
+        # 记录决策
+        self.permission_decisions[permission] = PermissionDecision(
+            permission=permission,
+            action=action,
+            timestamp=now,
+            context=context or {},
+        )
+
+        # 如果是允许，尝试提取并记录模式
+        if action == "allow":
+            pattern_info = extract_permission_pattern(permission)
+            if pattern_info:
+                pattern = pattern_info["pattern"]
+                description = pattern_info["description"]
+
+                if pattern not in self.permission_patterns:
+                    self.permission_patterns[pattern] = PermissionPattern(
+                        pattern=pattern,
+                        description=description,
+                        count=1,
+                        examples=[permission],
+                        first_seen=now,
+                        last_seen=now,
+                    )
+                else:
+                    pp = self.permission_patterns[pattern]
+                    pp.count += 1
+                    pp.last_seen = now
+                    if permission not in pp.examples:
+                        pp.examples.append(permission)
+
+        self._save_permissions()
+
+    def get_permission_stats(self) -> dict:
+        """获取权限统计"""
+        allowed = sum(1 for d in self.permission_decisions.values() if d.action == "allow")
+        denied = sum(1 for d in self.permission_decisions.values() if d.action == "deny")
+
+        return {
+            "total_decisions": len(self.permission_decisions),
+            "allowed": allowed,
+            "denied": denied,
+            "patterns_discovered": len(self.permission_patterns),
+        }
+
+    def get_permission_patterns(self, min_count: int = 1) -> list[PermissionPattern]:
+        """
+        获取权限模式
+
+        Args:
+            min_count: 最小出现次数
+
+        Returns:
+            权限模式列表，按出现次数排序
+        """
+        patterns = [
+            p for p in self.permission_patterns.values()
+            if p.count >= min_count
+        ]
+        return sorted(patterns, key=lambda p: p.count, reverse=True)
+
+    def suggest_permissions(self, threshold: int = 3) -> list[dict]:
+        """
+        生成权限建议
+
+        Args:
+            threshold: 最小出现次数阈值
+
+        Returns:
+            建议列表，每个建议包含 pattern, count, description, examples
+        """
+        suggestions = []
+
+        for pattern, pp in self.permission_patterns.items():
+            if pp.count >= threshold:
+                suggestions.append({
+                    "pattern": pattern,
+                    "count": pp.count,
+                    "description": pp.description,
+                    "examples": pp.examples[:3],
+                    "suggestion": f"建议添加: {pattern}",
+                })
+
+        # 按使用次数排序
+        suggestions.sort(key=lambda x: x["count"], reverse=True)
+        return suggestions
+
+    def export_permission_suggestions(self, threshold: int = 3) -> str:
+        """
+        导出权限建议为可复制的 JSON 格式
+
+        Args:
+            threshold: 最小出现次数阈值
+
+        Returns:
+            JSON 字符串，可直接复制到 settings.json
+        """
+        suggestions = self.suggest_permissions(threshold)
+        if not suggestions:
+            return "# 暂无权限建议"
+
+        lines = ['"permissions": {', '  "allow": [']
+        for s in suggestions:
+            lines.append(f'    "{s["pattern"]}",  # {s["description"]} ({s["count"]}次)')
+        lines.append("  ]")
+        lines.append("}")
+
+        return "\n".join(lines)
+
     # ==================== 导出/导入 ====================
 
     def export_memory(self, export_path: Path):
@@ -715,6 +1099,8 @@ class PersonalMemory:
             "projects": len(self.projects),
             "error_fixes": len(self.error_fixes),
             "workflows": len(self.workflows),
+            "permission_decisions": len(self.permission_decisions),
+            "permission_patterns": len(self.permission_patterns),
             "most_used_commands": self.get_frequent_commands(5),
             "recent_projects": len(self.get_recent_projects(5)),
         }

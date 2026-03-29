@@ -6,6 +6,7 @@
     python3 permission_report.py           # 查看完整报告
     python3 permission_report.py --suggest # 只显示建议
     python3 permission_report.py --stats   # 只显示统计
+    python3 permission_report.py --export  # 导出建议
 """
 
 import json
@@ -14,106 +15,74 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-PERMISSION_LEARNING_FILE = os.path.expanduser("~/.claude/permission_learning.json")
-SUGGESTION_FILE = os.path.expanduser("~/.claude/permission_suggestions.json")
+# 添加项目路径以导入 src 模块
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from src.memory.personal_memory import PersonalMemory
 
 
-def load_data():
-    """加载学习数据"""
-    if os.path.exists(PERMISSION_LEARNING_FILE):
-        with open(PERMISSION_LEARNING_FILE, "r") as f:
-            return json.load(f)
-    return None
-
-
-def load_suggestions():
-    """加载建议"""
-    if os.path.exists(SUGGESTION_FILE):
-        with open(SUGGESTION_FILE, "r") as f:
-            return json.load(f)
-    return None
-
-
-def print_stats(data):
+def print_stats(memory: PersonalMemory):
     """打印统计信息"""
-    if not data:
-        print("暂无学习数据")
-        return
+    stats = memory.get_stats()
+    perm_stats = memory.get_permission_stats()
 
     print("=" * 50)
     print("📊 权限学习统计")
     print("=" * 50)
 
-    allowed = data.get("allowed_permissions", {})
-    denied = data.get("denied_permissions", {})
-    patterns = data.get("pattern_usage", {})
-
-    print(f"\n✅ 允许的权限: {len(allowed)} 种")
-    total_allowed = sum(p.get("count", 0) for p in allowed.values())
-    print(f"   总使用次数: {total_allowed}")
-
-    print(f"\n❌ 拒绝的权限: {len(denied)} 种")
-
-    print(f"\n🔄 归纳的模式: {len(patterns)} 种")
+    print(f"\n✅ 允许的权限: {perm_stats['allowed']} 种")
+    print(f"❌ 拒绝的权限: {perm_stats['denied']} 种")
+    print(f"🔄 归纳的模式: {perm_stats['patterns_discovered']} 种")
 
     # 显示 Top 5 模式
+    patterns = memory.get_permission_patterns()
     if patterns:
         print("\n📈 高频模式 Top 5:")
-        sorted_patterns = sorted(
-            patterns.items(),
-            key=lambda x: x[1].get("count", 0),
-            reverse=True
-        )[:5]
-        for i, (pattern, info) in enumerate(sorted_patterns, 1):
-            print(f"   {i}. {pattern} ({info.get('count', 0)} 次)")
+        for i, pp in enumerate(patterns[:5], 1):
+            print(f"   {i}. {pp.pattern} ({pp.count} 次)")
 
 
-def print_suggestions():
+def print_suggestions(memory: PersonalMemory):
     """打印建议"""
-    suggestions = load_suggestions()
+    suggestions = memory.suggest_permissions(threshold=3)
 
-    if not suggestions or not suggestions.get("suggestions"):
-        print("暂无权限建议")
+    if not suggestions:
+        print("暂无权限建议（需要至少 3 次使用同一模式）")
         return
 
     print("=" * 50)
     print("💡 权限建议")
     print("=" * 50)
 
-    generated_at = suggestions.get("generated_at", "")
-    if generated_at:
-        print(f"\n生成时间: {generated_at}")
-
     print()
-    for i, s in enumerate(suggestions.get("suggestions", [])[:10], 1):
+    for i, s in enumerate(suggestions[:10], 1):
         print(f"{i}. {s.get('description', s.get('pattern'))}")
         print(f"   模式: {s.get('pattern')}")
         print(f"   次数: {s.get('count')}")
         print()
 
 
-def print_full_report():
+def print_full_report(memory: PersonalMemory):
     """打印完整报告"""
-    data = load_data()
-
     print("\n" + "=" * 60)
     print("📋 Claude Code 权限学习报告")
     print("=" * 60)
 
-    print_stats(data)
+    print_stats(memory)
     print()
-    print_suggestions()
+    print_suggestions(memory)
 
     print("=" * 60)
     print("\n💡 提示: 将建议的模式添加到 ~/.claude/settings.json")
     print("   格式: \"Bash(git push:*)\" 添加到 permissions.allow 数组")
 
 
-def export_to_settings():
+def export_to_settings(memory: PersonalMemory):
     """导出建议到 settings.json 格式"""
-    suggestions = load_suggestions()
+    suggestions = memory.suggest_permissions(threshold=3)
 
-    if not suggestions or not suggestions.get("suggestions"):
+    if not suggestions:
         print("暂无可导出的建议")
         return
 
@@ -123,10 +92,12 @@ def export_to_settings():
 
     existing = get_existing_permissions()
 
-    for s in suggestions.get("suggestions", []):
+    for s in suggestions:
         pattern = s.get("pattern", "")
         if pattern and pattern not in existing:
-            print(f'    "{pattern}",  # {s.get("description", "")}')
+            desc = s.get("description", "")
+            count = s.get("count", 0)
+            print(f'    "{pattern}",  # {desc} ({count}次)')
 
     print("  ]")
     print("}")
@@ -134,8 +105,8 @@ def export_to_settings():
 
 def get_existing_permissions():
     """获取现有权限"""
-    settings_file = os.path.expanduser("~/.claude/settings.json")
-    if os.path.exists(settings_file):
+    settings_file = Path.home() / ".claude" / "settings.json"
+    if settings_file.exists():
         try:
             with open(settings_file, "r") as f:
                 settings = json.load(f)
@@ -146,19 +117,20 @@ def get_existing_permissions():
 
 
 def main():
+    memory = PersonalMemory()
+
     if len(sys.argv) > 1:
         arg = sys.argv[1]
         if arg == "--suggest":
-            print_suggestions()
+            print_suggestions(memory)
         elif arg == "--stats":
-            data = load_data()
-            print_stats(data)
+            print_stats(memory)
         elif arg == "--export":
-            export_to_settings()
+            export_to_settings(memory)
         else:
             print(f"用法: {sys.argv[0]} [--suggest|--stats|--export]")
     else:
-        print_full_report()
+        print_full_report(memory)
 
 
 if __name__ == "__main__":
