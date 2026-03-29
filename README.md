@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-41%20passing-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-4%20files-yellow.svg)](tests/)
 
 [中文文档](README.zh.md) | English
 
@@ -203,11 +203,26 @@ fixes = memory.find_fix_for_error("ModuleNotFoundError: requests")
 
 | Aspect            | Status            | Notes                                    |
 | ----------------- | ----------------- | ---------------------------------------- |
-| **Core Features** | ✅ 8 modules      | Context, reasoning, memory, knowledge... |
-| **Test Coverage** | ✅ 41 tests       | Unit + integration tests                 |
+| **Core Features** | ⚠️ 8 modules     | Architecture complete, implementation partial |
+| **Test Coverage** | ⚠️ 4 test files  | Core modules partially covered           |
 | **CI/CD**         | ✅ GitHub Actions | Auto test + build                        |
 | **Documentation** | ✅ Complete       | API + Quick Start + Architecture         |
 | **Open Source**   | ✅ 100%           | LICENSE, CONTRIBUTING, CoC               |
+
+---
+
+## 🔧 Module Implementation Status
+
+| Module | Status | Description |
+|--------|--------|-------------|
+| **CLI Hooks** | ✅ Production Ready | Permission learning hook fully functional |
+| **Personal Memory** | ✅ Usable | Data structures and API complete |
+| **Context Manager** | ⚠️ Partial | RAG framework done, vector search needs deps |
+| **Project Knowledge** | ⚠️ Partial | Analysis framework ready, learning TBD |
+| **Multi-File Reasoning** | 📋 Planned | Architecture designed |
+| **Layer 0-3 Pipeline** | 📋 Planned | Data flow not yet connected |
+
+See [Closure Roadmap](docs/CLOSURE_ROADMAP.md) for implementation plan.
 
 ---
 

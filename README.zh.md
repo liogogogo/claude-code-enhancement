@@ -4,7 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-41%20passing-brightgreen.svg)](tests/)
+[![Tests](https://img.shields.io/badge/tests-4%20files-yellow.svg)](tests/)
 
 中文 | [English](README.md)
 
@@ -201,11 +201,26 @@ fixes = memory.find_fix_for_error("ModuleNotFoundError: requests")
 
 | 维度         | 状态              | 说明                        |
 | ------------ | ----------------- | --------------------------- |
-| **核心功能** | ✅ 8 个模块       | 上下文、推理、记忆、知识... |
-| **测试覆盖** | ✅ 41 个测试      | 单元 + 集成测试             |
+| **核心功能** | ⚠️ 8 个模块      | 架构完整，实现部分完成     |
+| **测试覆盖** | ⚠️ 4 个测试文件  | 核心模块部分覆盖           |
 | **CI/CD**    | ✅ GitHub Actions | 自动测试 + 构建             |
 | **文档**     | ✅ 完整           | API + 快速开始 + 架构       |
 | **开源合规** | ✅ 100%           | LICENSE, CONTRIBUTING, CoC  |
+
+---
+
+## 🔧 模块实现状态
+
+| 模块 | 状态 | 说明 |
+|------|------|------|
+| **CLI Hooks** | ✅ 生产可用 | 权限学习 Hook 完整实现 |
+| **个性化记忆** | ✅ 可用 | 数据结构和 API 完整 |
+| **上下文管理** | ⚠️ 部分 | RAG 框架完成，向量搜索需依赖 |
+| **项目知识** | ⚠️ 部分 | 分析框架就绪，学习待实现 |
+| **多文件推理** | 📋 规划中 | 架构已设计 |
+| **Layer 0-3 管道** | 📋 规划中 | 数据流尚未连接 |
+
+详见 [闭环路线图](docs/CLOSURE_ROADMAP.md)
 
 ---
 
