@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved project structure
 - Enhanced documentation
 
+### Fixed
+
+- **Permission Learning Hook** - 修复 Claude Code Notification hook 输入格式变更导致的学习失效问题
+  - 新增 PreToolUse/PostToolUse 组合捕获机制
+  - 通过工具执行生命周期记录权限决策
+  - 成功执行 = 用户允许，自动归纳模式
+  - 对高频安全模式支持自动批准
+
 ## [1.0.0] - 2026-03-29
 
 ### Added

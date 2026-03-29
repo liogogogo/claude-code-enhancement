@@ -4,33 +4,100 @@
 
 Permission Learning Hook 是一个智能权限学习系统：
 
-1. **自动记录** - 记录你对每个权限请求的决策（允许/拒绝）
+1. **自动记录** - 通过 PreToolUse/PostToolUse 组合捕获成功的工具调用
 2. **模式归纳** - 从具体命令中提取通用权限模式
 3. **智能建议** - 基于使用频率生成权限建议
+4. **自动批准** - 对高频使用的安全模式自动批准
+
+## 工作原理
+
+### Hook 事件组合
+
+| Hook 事件 | 作用 | 触发时机 |
+|----------|------|---------|
+| **PreToolUse** | 记录即将执行的命令 | 工具执行前 |
+| **PostToolUse** | 确认执行成功，保存学习记录 | 工具执行后 |
+| **Notification** | 兼容旧版本格式 | 权限提示时 |
+
+### 学习流程
+
+```
+用户执行命令 → PreToolUse 记录 → 命令成功 → PostToolUse 确认 → 保存到 permissions.json
+```
+
+**关键改进：**
+- 不依赖 Notification 传递的 `permission/action` 字段（Claude Code 已移除）
+- 通过工具执行生命周期捕获完整决策信息
+- 成功执行 = 用户允许，自动记录到学习库
 
 ## 安装
 
 ### 方式一：项目级配置（推荐）
 
-在项目根目录创建 `.claude/settings.json`：
-
-```json
-{
-  "permissions": {
-    "allow": []
-  }
-}
-```
-
-然后将 `hooks/hooks.json` 的内容复制进去。
-
-### 方式二：全局配置
-
-编辑 `~/.claude/settings.json`，添加：
+在项目根目录创建 `.claude/settings.json`，添加以下 hook 配置：
 
 ```json
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /path/to/claude-code-enhancement/hooks/permission_learning_hook.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /path/to/claude-code-enhancement/hooks/permission_learning_hook.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+### 方式二：全局配置
+
+编辑 `~/.claude/settings.json`：
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/liocc/Development/active/claude-code-enhancement/hooks/permission_learning_hook.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/liocc/Development/active/claude-code-enhancement/hooks/permission_learning_hook.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "permission_prompt",
@@ -77,8 +144,9 @@ python3 ~/Development/active/claude-code-enhancement/hooks/permission_report.py 
 
 | 文件 | 用途 |
 |------|------|
-| `~/.claude/permission_learning.json` | 学习数据（允许/拒绝记录） |
-| `~/.claude/permission_suggestions.json` | 生成的建议 |
+| `~/.claude/memory/permissions.json` | 学习数据（允许记录 + 模式归纳） |
+| `/tmp/permission-learning-debug.log` | 调试日志 |
+| `/tmp/permission-pending.json` | 临时 Pending 记录（PreToolUse → PostToolUse 传递） |
 
 ## 支持的模式
 
