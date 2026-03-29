@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union, List, Dict, Tuple, Set
 
 # 尝试导入可选依赖
 try:
@@ -98,7 +98,7 @@ class ContextSummary:
     content: str
     tokens: int
     created_at: datetime
-    source_files: list[str] = field(default_factory=list)
+    source_files: List[str] = field(default_factory=list)
     metadata: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
@@ -154,7 +154,7 @@ class EmbeddingEngine:
                 "Warning: sentence-transformers not installed. Using simple hashing for embeddings."
             )
 
-    def encode(self, text: str) -> list[float]:
+    def encode(self, text: str) -> List[float]:
         """
         生成文本嵌入
 
@@ -172,7 +172,7 @@ class EmbeddingEngine:
             hash_int = int(hash_obj.hexdigest(), 16)
             return [float(hash_int % 1000) / 1000] * 384
 
-    def encode_batch(self, texts: list[str]) -> list[list[float]]:
+    def encode_batch(self, texts: List[str]) -> List[List[float]]:
         """批量生成嵌入"""
         if self.model:
             return self.model.encode(texts).tolist()
@@ -193,7 +193,8 @@ class VectorStore:
         self.persist_directory = persist_directory
         self.client = None
         self.collection = None
-        self._in_memory_store: dict[str, dict] = {}  # 后备存储
+        self._in_memory_store: Dict[str, dict] = {}  # 后备存储
+        self._store_file = None  # 内存存储文件路径
 
         if HAS_CHROMA and persist_directory:
             self.client = chromadb.PersistentClient(
@@ -204,8 +205,11 @@ class VectorStore:
                 name="code_chunks",
                 metadata={"hnsw:space": "cosine"},
             )
+        elif persist_directory:
+            # 使用文件存储作为降级方案
+            self._store_file = persist_directory / "memory_store.json"
 
-    def add(self, chunks: list[CodeChunk], embeddings: list[list[float]]):
+    def add(self, chunks: List[CodeChunk], embeddings: List[List[float]]):
         """
         添加代码块
 
@@ -226,10 +230,39 @@ class VectorStore:
                     "chunk": chunk.to_dict(),
                     "embedding": embedding,
                 }
+            # 保存到文件
+            self._save_memory_store()
+
+    def _save_memory_store(self):
+        """保存内存存储到文件"""
+        if self._store_file:
+            self._store_file.parent.mkdir(parents=True, exist_ok=True)
+            data = {
+                chunk_id: {
+                    "chunk": data["chunk"],
+                    "embedding": data["embedding"],
+                }
+                for chunk_id, data in self._in_memory_store.items()
+            }
+            self._store_file.write_text(json.dumps(data, indent=2, ensure_ascii=False))
+
+    def load_memory_store(self):
+        """从文件加载内存存储"""
+        if self._store_file and self._store_file.exists():
+            try:
+                data = json.loads(self._store_file.read_text())
+                self._in_memory_store = {}
+                for chunk_id, item in data.items():
+                    self._in_memory_store[chunk_id] = {
+                        "chunk": item["chunk"],
+                        "embedding": item["embedding"],
+                    }
+            except Exception as e:
+                print(f"Warning: Failed to load memory store: {e}")
 
     def search(
-        self, query_embedding: list[float], n_results: int = 10
-    ) -> list[tuple[CodeChunk, float]]:
+        self, query_embedding: List[float], n_results: int = 10
+    ) -> List[Tuple[CodeChunk, float]]:
         """
         搜索相似代码块
 
@@ -264,7 +297,7 @@ class VectorStore:
             results.sort(key=lambda x: x[1], reverse=True)
             return results[:n_results]
 
-    def delete(self, chunk_ids: list[str]):
+    def delete(self, chunk_ids: List[str]):
         """删除代码块"""
         if self.collection:
             self.collection.delete(ids=chunk_ids)
@@ -284,7 +317,7 @@ class VectorStore:
             self._in_memory_store.clear()
 
     @staticmethod
-    def _cosine_similarity(a: list[float], b: list[float]) -> float:
+    def _cosine_similarity(a: List[float], b: List[float]) -> float:
         """计算余弦相似度"""
         dot_product = sum(x * y for x, y in zip(a, b))
         norm_a = sum(x**2 for x in a) ** 0.5
@@ -332,11 +365,11 @@ class ContextManager:
         self.vector_store = VectorStore(self.persist_directory)
 
         # 摘要存储
-        self.summaries: dict[ContextLevel, ContextSummary] = {}
-        self.conversation_history: list[ConversationTurn] = []
+        self.summaries: Dict[ContextLevel, ContextSummary] = {}
+        self.conversation_history: List[ConversationTurn] = []
 
         # 索引状态
-        self._indexed_files: set[str] = set()
+        self._indexed_files: Set[str] = set()
         self._index_metadata: dict = {}
 
         # 加载持久化数据
@@ -344,8 +377,8 @@ class ContextManager:
 
     def index_codebase(
         self,
-        file_patterns: list[str] = None,
-        exclude_patterns: list[str] = None,
+        file_patterns: List[str] = None,
+        exclude_patterns: List[str] = None,
         chunk_size: int = 500,
         chunk_overlap: int = 50,
     ) -> dict:
@@ -438,7 +471,7 @@ class ContextManager:
         content: str,
         chunk_size: int,
         chunk_overlap: int,
-    ) -> list[CodeChunk]:
+    ) -> List[CodeChunk]:
         """将文件分割成块"""
         lines = content.split("\n")
         chunks = []
@@ -470,8 +503,8 @@ class ContextManager:
         self,
         query: str,
         n_results: int = 10,
-        file_filter: Optional[list[str]] = None,
-    ) -> list[tuple[CodeChunk, float]]:
+        file_filter: Optional[List[str]] = None,
+    ) -> List[Tuple[CodeChunk, float]]:
         """
         搜索相关代码
 
@@ -483,8 +516,18 @@ class ContextManager:
         Returns:
             (代码块, 相似度) 列表
         """
-        query_embedding = self.embedding_engine.encode(query)
-        results = self.vector_store.search(query_embedding, n_results * 2)
+        # 如果没有向量存储或没有数据，使用关键词搜索
+        if not self.vector_store.collection and not self.vector_store._in_memory_store:
+            return []
+
+        # 检查是否使用简单哈希（无 sentence-transformers）
+        if self.embedding_engine.model is None:
+            # 使用关键词搜索作为更好的降级方案
+            results = self._keyword_search(query, n_results * 2)
+        else:
+            # 使用向量搜索
+            query_embedding = self.embedding_engine.encode(query)
+            results = self.vector_store.search(query_embedding, n_results * 2)
 
         # 应用文件过滤
         if file_filter:
@@ -494,6 +537,38 @@ class ContextManager:
                 if chunk.file_path in file_filter
             ]
 
+        return results[:n_results]
+
+    def _keyword_search(self, query: str, n_results: int) -> List[Tuple[CodeChunk, float]]:
+        """
+        关键词搜索（无向量依赖时的降级方案）
+
+        Args:
+            query: 查询文本
+            n_results: 返回数量
+
+        Returns:
+            (代码块, 相似度) 列表
+        """
+        query_terms = set(query.lower().split())
+        results = []
+
+        for chunk_id, data in self.vector_store._in_memory_store.items():
+            chunk = CodeChunk.from_dict(data["chunk"])
+            content_lower = chunk.content.lower()
+
+            # 计算关键词匹配分数
+            matched_terms = sum(1 for term in query_terms if term in content_lower)
+            if matched_terms > 0:
+                # 计算相似度：匹配词数 / 查询词数
+                score = matched_terms / len(query_terms)
+                # 加权：内容中出现的总次数
+                term_freq = sum(content_lower.count(term) for term in query_terms)
+                score = min(1.0, score + term_freq * 0.01)
+                results.append((chunk, score))
+
+        # 按分数排序
+        results.sort(key=lambda x: x[1], reverse=True)
         return results[:n_results]
 
     def get_context_for_query(
@@ -547,7 +622,7 @@ class ContextManager:
         # 这里应该调用 LLM 生成摘要
         # 简化实现：使用文件列表作为项目级摘要
 
-        files_by_ext: dict[str, list[str]] = {}
+        files_by_ext: Dict[str, List[str]] = {}
         for file_str in self._indexed_files:
             ext = Path(file_str).suffix
             if ext not in files_by_ext:
@@ -642,7 +717,7 @@ class ContextManager:
         self._save_state()
         return summary
 
-    def _extract_topics(self, turns: list[ConversationTurn]) -> str:
+    def _extract_topics(self, turns: List[ConversationTurn]) -> str:
         """提取话题 (简化实现)"""
         # 这里应该使用 NLP 或 LLM 提取关键话题
         user_turns = [t.content[:50] for t in turns if t.role == "user"]
@@ -670,6 +745,9 @@ class ContextManager:
     def _load_state(self):
         """加载状态"""
         state_file = self.persist_directory / "state.json"
+
+        # 加载向量存储的内存数据
+        self.vector_store.load_memory_store()
 
         if not state_file.exists():
             return
@@ -726,7 +804,7 @@ class ContextManager:
 
 # 便捷函数
 def create_context_manager(
-    project_path: str | Path,
+    project_path: Union[str, Path],
     **kwargs,
 ) -> ContextManager:
     """创建上下文管理器"""

@@ -11,7 +11,7 @@ Claude Code 增强集成模块
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union, List, Dict, Tuple, Set
 
 from .context_manager import ContextManager, ContextLevel
 from .project_knowledge import ProjectKnowledgeLearner
@@ -177,7 +177,7 @@ class ClaudeCodeEnhancer:
         if self.personal_memory:
             self.personal_memory.record_command(command, success)
 
-    def get_command_suggestions(self, prefix: str = "") -> list[str]:
+    def get_command_suggestions(self, prefix: str = "") -> List[str]:
         """获取命令建议"""
         if not self.personal_memory:
             return []
@@ -289,7 +289,7 @@ class ClaudeCodeEnhancer:
 
     def learn_from_session(
         self,
-        actions: list[dict],
+        actions: List[dict],
         outcomes: dict,
     ):
         """
@@ -370,7 +370,7 @@ class ClaudeCodeEnhancer:
 
 # 便捷函数
 def create_enhancer(
-    project_path: str | Path = None,
+    project_path: Union[str, Path] = None,
     **kwargs,
 ) -> ClaudeCodeEnhancer:
     """创建增强器"""

@@ -32,7 +32,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union, List, Dict, Tuple, Set
 
 
 class DependencyType(Enum):
@@ -104,8 +104,8 @@ class Impact:
     file_path: str
     impact_level: ImpactLevel
     reason: str
-    suggested_changes: list[str] = field(default_factory=list)
-    symbols_affected: list[str] = field(default_factory=list)
+    suggested_changes: List[str] = field(default_factory=list)
+    symbols_affected: List[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -122,10 +122,10 @@ class DependencyNode:
     """依赖图节点"""
 
     file_path: str
-    imports: list[str] = field(default_factory=list)
-    imported_by: list[str] = field(default_factory=list)
-    symbols: list[Symbol] = field(default_factory=list)
-    exports: list[str] = field(default_factory=list)
+    imports: List[str] = field(default_factory=list)
+    imported_by: List[str] = field(default_factory=list)
+    symbols: List[Symbol] = field(default_factory=list)
+    exports: List[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -148,7 +148,7 @@ class MultiFileReasoner:
     4. 建议相关修改
     """
 
-    def __init__(self, project_path: Path | str):
+    def __init__(self, project_path: Union[Path, str]):
         """
         初始化推理器
 
@@ -158,13 +158,13 @@ class MultiFileReasoner:
         self.project_path = Path(project_path)
 
         # 依赖图
-        self.dependency_graph: dict[str, DependencyNode] = {}
+        self.dependency_graph: Dict[str, DependencyNode] = {}
 
-        # 符号索引: name -> list[Symbol]
-        self.symbol_index: dict[str, list[Symbol]] = defaultdict(list)
+        # 符号索引: name -> List[Symbol]
+        self.symbol_index: Dict[str, List[Symbol]] = defaultdict(list)
 
         # 文件内容缓存
-        self._file_cache: dict[str, str] = {}
+        self._file_cache: Dict[str, str] = {}
 
         # 分析配置
         self.supported_extensions = {
@@ -220,7 +220,7 @@ class MultiFileReasoner:
 
         return stats
 
-    def _collect_code_files(self) -> list[Path]:
+    def _collect_code_files(self) -> List[Path]:
         """收集所有代码文件"""
         files = []
 
@@ -508,7 +508,7 @@ class MultiFileReasoner:
         self,
         file_path: str,
         change_description: str,
-    ) -> list[Impact]:
+    ) -> List[Impact]:
         """
         分析修改的影响范围
 
@@ -611,8 +611,8 @@ class MultiFileReasoner:
         self,
         change_description: str,
         target_file: str,
-        affected_symbols: list[str],
-    ) -> list[str]:
+        affected_symbols: List[str],
+    ) -> List[str]:
         """推断需要的修改"""
         suggestions = []
         desc_lower = change_description.lower()
@@ -645,7 +645,7 @@ class MultiFileReasoner:
         self,
         symbol_name: str,
         exclude_file: str = None,
-    ) -> list[tuple[str, int]]:
+    ) -> List[Tuple[str, int]]:
         """查找符号使用位置"""
         usages = []
 
@@ -662,7 +662,7 @@ class MultiFileReasoner:
 
         return usages
 
-    def _find_related_tests(self, file_path: str) -> list[str]:
+    def _find_related_tests(self, file_path: str) -> List[str]:
         """查找相关测试文件"""
         test_files = []
 
@@ -757,7 +757,7 @@ class MultiFileReasoner:
                 return match.group(1)
         return None
 
-    def get_related_files(self, file_path: str, depth: int = 2) -> list[str]:
+    def get_related_files(self, file_path: str, depth: int = 2) -> List[str]:
         """
         获取相关文件
 
@@ -798,7 +798,7 @@ class MultiFileReasoner:
         related.discard(file_path)
         return list(related)
 
-    def get_dependency_chain(self, from_file: str, to_file: str) -> list[list[str]]:
+    def get_dependency_chain(self, from_file: str, to_file: str) -> List[List[str]]:
         """
         获取两个文件间的依赖链
 
@@ -815,7 +815,7 @@ class MultiFileReasoner:
         paths = []
         visited = set()
 
-        def dfs(current: str, path: list[str]):
+        def dfs(current: str, path: List[str]):
             if current == to_file:
                 paths.append(path.copy())
                 return
@@ -877,7 +877,7 @@ class MultiFileReasoner:
 
 
 # 便捷函数
-def create_reasoner(project_path: str | Path) -> MultiFileReasoner:
+def create_reasoner(project_path: Union[str, Path]) -> MultiFileReasoner:
     """创建多文件推理器"""
     reasoner = MultiFileReasoner(Path(project_path))
     reasoner.build_dependency_graph()

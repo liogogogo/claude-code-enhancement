@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union, List, Dict, Tuple, Set
 
 
 class KnowledgeType(Enum):
@@ -49,7 +49,7 @@ class ProjectKnowledge:
     source: str = ""  # 来源文件/分析
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
-    examples: list[str] = field(default_factory=list)
+    examples: List[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -84,9 +84,9 @@ class CodePattern:
     name: str
     description: str
     pattern: str  # 正则或模板
-    examples: list[str]
+    examples: List[str]
     frequency: int = 1
-    languages: list[str] = field(default_factory=list)
+    languages: List[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return {
@@ -106,8 +106,8 @@ class ProjectConvention:
     category: str  # naming, structure, style, etc.
     rule: str
     description: str
-    examples: list[str]
-    exceptions: list[str] = field(default_factory=list)
+    examples: List[str]
+    exceptions: List[str] = field(default_factory=list)
     confidence: float = 1.0
 
     def to_dict(self) -> dict:
@@ -145,12 +145,12 @@ class ProjectKnowledgeLearner:
         self.knowledge_dir.mkdir(parents=True, exist_ok=True)
 
         # 知识存储
-        self.knowledge: dict[str, ProjectKnowledge] = {}
-        self.patterns: list[CodePattern] = []
-        self.conventions: list[ProjectConvention] = []
+        self.knowledge: Dict[str, ProjectKnowledge] = {}
+        self.patterns: List[CodePattern] = []
+        self.conventions: List[ProjectConvention] = []
 
         # 分析缓存
-        self._file_cache: dict[str, str] = {}
+        self._file_cache: Dict[str, str] = {}
         self._analysis_cache: dict = {}
 
         # 加载已有知识
@@ -235,9 +235,9 @@ class ProjectKnowledgeLearner:
 
     def _get_code_files(
         self,
-        extensions: list[str] = None,
-        exclude: list[str] = None,
-    ) -> list[Path]:
+        extensions: List[str] = None,
+        exclude: List[str] = None,
+    ) -> List[Path]:
         """获取代码文件"""
         if extensions is None:
             extensions = [".py", ".ts", ".tsx", ".js", ".jsx", ".go", ".rs", ".java"]
@@ -361,7 +361,7 @@ class ProjectKnowledgeLearner:
         except Exception as e:
             print(f"Warning: Failed to analyze {file_path}: {e}")
 
-    def _extract_imports(self, content: str, ext: str) -> list[str]:
+    def _extract_imports(self, content: str, ext: str) -> List[str]:
         """提取导入语句"""
         imports = []
 
@@ -445,7 +445,7 @@ class ProjectKnowledgeLearner:
         for conv in structure_conventions:
             self.conventions.append(conv)
 
-    def _analyze_naming_conventions(self) -> list[ProjectConvention]:
+    def _analyze_naming_conventions(self) -> List[ProjectConvention]:
         """分析命名约定"""
         conventions = []
 
@@ -526,7 +526,7 @@ class ProjectKnowledgeLearner:
             return "UPPER CASE"
         return "other"
 
-    def _analyze_structure_conventions(self) -> list[ProjectConvention]:
+    def _analyze_structure_conventions(self) -> List[ProjectConvention]:
         """分析结构约定"""
         conventions = []
 
@@ -700,7 +700,7 @@ class ProjectKnowledgeLearner:
                 return conv
         return None
 
-    def get_patterns(self) -> list[CodePattern]:
+    def get_patterns(self) -> List[CodePattern]:
         """获取所有模式"""
         return self.patterns
 
@@ -771,7 +771,7 @@ class ProjectKnowledgeLearner:
 
 
 # 便捷函数
-def learn_project(project_path: str | Path) -> ProjectKnowledgeLearner:
+def learn_project(project_path: Union[str, Path]) -> ProjectKnowledgeLearner:
     """学习项目"""
     learner = ProjectKnowledgeLearner(Path(project_path))
     learner.analyze_project()
