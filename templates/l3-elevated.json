@@ -1,5 +1,7 @@
 {
-  "_comment": "Claude Code 项目配置模板 - 复制到项目根目录 .claude/settings.json",
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_level": "L3 - Elevated",
+  "_description": "提升权限模式：可信项目，包含文件操作和多语言支持",
 
   "env": {
     "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
@@ -9,8 +11,8 @@
   "permissions": {
     "allow": [
       "Bash(git:*)",
-      "Bash(pip install:*)",
-      "Bash(pip3 install:*)",
+      "Bash(pip:*)",
+      "Bash(pip3:*)",
       "Bash(python:*)",
       "Bash(python3:*)",
       "Bash(.venv/bin/python:*)",
@@ -25,29 +27,33 @@
       "Bash(go:*)",
       "Bash(gofmt:*)",
       "Bash(goimports:*)",
+      "Bash(cargo:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
       "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
       "Bash(cat:*)",
       "Bash(head:*)",
       "Bash(tail:*)",
       "Bash(gh:*)",
       "Bash(tmux:*)",
       "Bash(curl:*)",
+      "Bash(jq:*)",
       "WebSearch"
     ],
-    "deny": [
-      "Bash(rm -rf /*)",
-      "Bash(sudo:*)",
-      "Bash(chmod -R 777:*)"
-    ]
+    "deny": ["Bash(rm -rf /*)", "Bash(sudo:*)", "Bash(chmod -R 777:*)"]
   },
 
   "mcpServers": {
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${PROJECT_ROOT}"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "${PROJECT_ROOT}"
+      ]
     },
     "memory": {
       "command": "npx",
@@ -56,6 +62,17 @@
   },
 
   "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_response.filePath // .tool_input.file_path' | { read -r f; [ -f \"$f\" ] && npx prettier --write \"$f\" 2>/dev/null || true; }"
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "permission_prompt",

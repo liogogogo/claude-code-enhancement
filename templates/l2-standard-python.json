@@ -1,13 +1,15 @@
 {
-  "_comment": "Python 项目配置模板",
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_level": "L2 - Standard (Python)",
+  "_description": "标准权限模式：Python 项目日常开发，包含虚拟环境和代码质量工具",
 
   "permissions": {
     "allow": [
       "Bash(git:*)",
       "Bash(python:*)",
       "Bash(python3:*)",
-      "Bash(pip install:*)",
-      "Bash(pip3 install:*)",
+      "Bash(pip:*)",
+      "Bash(pip3:*)",
       "Bash(.venv/bin/python:*)",
       "Bash(.venv/bin/pip:*)",
       "Bash(pytest:*)",
@@ -19,6 +21,7 @@
       "Bash(find:*)",
       "Bash(grep:*)",
       "Bash(mkdir:*)",
+      "Bash(cat:*)",
       "Bash(gh:*)",
       "WebSearch"
     ]
@@ -27,7 +30,11 @@
   "mcpServers": {
     "filesystem": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${PROJECT_ROOT}"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "${PROJECT_ROOT}"
+      ]
     }
   }
 }

@@ -1,13 +1,21 @@
-# Settings 模板使用指南
+# Claude Code 权限等级模板
+
+快速配置 Claude Code 权限的预设模板，按信任等级分类。
 
 ## 快速开始
 
 ```bash
-# 复制到你项目的 .claude 目录
-cp templates/l4-full-trust.json .claude/settings.json  # 完全信任
+# 推荐：使用安装脚本（自动检测环境、交互式选择等级和安装位置）
+./config/install.sh
+
+# 或直接指定参数
+./config/install.sh --level l4 --scope global
+
+# 远程一键安装
+curl -fsSL https://raw.githubusercontent.com/liogogogo/claude-code-enhancement/main/config/install.sh | bash
 ```
 
-## 权限等级系统
+## 权限等级
 
 | 等级   | 文件                 | 信任度  | 适用场景                      |
 | ------ | -------------------- | ------- | ----------------------------- |
@@ -15,6 +23,15 @@ cp templates/l4-full-trust.json .claude/settings.json  # 完全信任
 | **L2** | `l2-standard-*.json` | 🔐 标准 | 日常开发、个人项目            |
 | **L3** | `l3-elevated.json`   | 🔓 提升 | 可信项目、频繁文件操作        |
 | **L4** | `l4-full-trust.json` | ♾️ 完全 | 私有项目、完全信任环境        |
+
+## 安装脚本新功能
+
+安装脚本 (`config/install.sh`) 现在支持：
+
+- **环境自动检测** - 识别 CI/公司/容器/个人环境，给出推荐等级
+- **交互式等级选择** - 显示详细等级说明，帮助用户选择
+- **安装位置选择** - 支持全局 (`~/.claude/`) 或项目级 (`./.claude/`)
+- **命令行参数** - 支持 `--level` 和 `--scope` 参数
 
 ---
 
@@ -134,23 +151,8 @@ cp templates/l3-elevated.json ~/.claude/settings.json
 
 ```bash
 # 交互式选择
-./config/install.sh
-
-# 直接指定等级
 ./config/install.sh --level l4
 ```
-
----
-
-## 通配符规则
-
-| 模式                  | 含义                  |
-| --------------------- | --------------------- |
-| `Bash(git:*)`         | 所有 git 命令         |
-| `Bash(git push:*)`    | 所有 git push 操作    |
-| `Bash(pip install:*)` | 所有 pip install 操作 |
-| `Bash(go:*)`          | 所有 go 命令          |
-| `*`                   | 所有操作（仅 L4）     |
 
 ---
 
@@ -164,52 +166,3 @@ cp templates/l3-elevated.json ~/.claude/settings.json
 | 完全隔离的虚拟机/容器 | L4       |
 
 **注意**：L4 级别虽然保留了极端危险命令的拦截，但仍需谨慎使用。
-
----
-
-## 环境变量
-
-### 安全存储
-
-敏感信息放在 `settings.local.json`：
-
-```json
-{
-  "env": {
-    "GITHUB_TOKEN": "${GITHUB_TOKEN}",
-    "DATABASE_URL": "${DATABASE_URL}"
-  }
-}
-```
-
-### Shell 配置
-
-在 `~/.zshrc` 中设置：
-
-```bash
-export GITHUB_TOKEN="ghp_xxxx"
-export DATABASE_URL="postgresql://..."
-```
-
----
-
-## 最佳实践
-
-### 1. 项目级优先
-
-每个项目独立配置，避免全局污染。
-
-### 2. 敏感信息隔离
-
-Token、密码放在 `settings.local.json`，不要提交到 git。
-
-### 3. 团队共享
-
-非敏感配置提交到 `.claude/settings.json`，团队成员共享。
-
-### 4. .gitignore 配置
-
-```gitignore
-# Claude Code
-.claude/settings.local.json
-```

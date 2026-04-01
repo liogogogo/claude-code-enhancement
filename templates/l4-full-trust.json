@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_level": "L4 - Full Trust",
+  "_description": "完全信任模式：允许所有操作，仅拦截极端危险命令",
+
+  "permissions": {
+    "allow": ["*"],
+    "deny": [
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf /)",
+      "Bash(sudo rm -rf:*)",
+      "Bash(mkfs:*)",
+      "Bash(dd if=/dev/zero:*)",
+      "Bash(:(){ :|:& };:)"
+    ]
+  },
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if jq -r '.tool_input.command' | grep -qiE 'rm -rf /|sudo rm -rf|mkfs|dd if=/dev/zero|:(){ :|:& };:'; then echo '{\"continue\": false, \"stopReason\": \"Blocked extremely dangerous command\"}'; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
