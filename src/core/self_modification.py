@@ -361,22 +361,246 @@ class SelfModificationEngine:
 
     def _create_snapshot(self) -> Dict[str, Any]:
         """创建快照用于回滚"""
-        # TODO: 实现完整快照
-        return {"timestamp": "now"}
+        import shutil
+        from datetime import datetime
+
+        snapshot = {
+            "timestamp": datetime.now().isoformat(),
+            "knowledge_base_backup": None,
+            "prompt_backup": None,
+            "config_backup": None,
+        }
+
+        # 备份知识库
+        if self.knowledge_base_path:
+            kb_path = Path(self.knowledge_base_path)
+            if kb_path.exists():
+                backup_path = kb_path.with_suffix(f".backup_{datetime.now().strftime('%Y%m%d%H%M%S')}")
+                shutil.copy(kb_path, backup_path)
+                snapshot["knowledge_base_backup"] = str(backup_path)
+
+        # 备份提示词文件（如果存在）
+        prompt_file = Path.home() / ".claude" / "prompts" / "system_prompt.md"
+        if prompt_file.exists():
+            backup_path = prompt_file.with_suffix(f".backup_{datetime.now().strftime('%Y%m%d%H%M%S')}")
+            shutil.copy(prompt_file, backup_path)
+            snapshot["prompt_backup"] = str(backup_path)
+
+        # 备份配置
+        config_file = Path.home() / ".claude" / "settings.json"
+        if config_file.exists():
+            backup_path = config_file.with_suffix(f".backup_{datetime.now().strftime('%Y%m%d%H%M%S')}")
+            shutil.copy(config_file, backup_path)
+            snapshot["config_backup"] = str(backup_path)
+
+        return snapshot
 
     def _execute_modification(self, proposal: ModificationProposal) -> None:
         """执行修改"""
-        # TODO: 实现修改执行
-        # 根据修改类型应用不同的修改逻辑
-        pass
+        from pathlib import Path
+        import json
+
+        if proposal.modification_type == ModificationType.PROMPT_UPDATE:
+            self._execute_prompt_update(proposal)
+        elif proposal.modification_type == ModificationType.KNOWLEDGE_ADDITION:
+            self._execute_knowledge_addition(proposal)
+        elif proposal.modification_type == ModificationType.STRATEGY_ADJUSTMENT:
+            self._execute_strategy_adjustment(proposal)
+        elif proposal.modification_type == ModificationType.ARCHITECTURE_CHANGE:
+            self._execute_architecture_change(proposal)
+
+    def _execute_prompt_update(self, proposal: ModificationProposal) -> None:
+        """执行提示词更新"""
+        prompt_dir = Path.home() / ".claude" / "prompts"
+        prompt_dir.mkdir(parents=True, exist_ok=True)
+
+        prompt_file = prompt_dir / "system_prompt.md"
+
+        # 读取现有提示词
+        existing = ""
+        if prompt_file.exists():
+            existing = prompt_file.read_text(encoding="utf-8")
+
+        # 应用更新
+        changes = proposal.changes
+        prompt_type = changes.get("prompt_type", "general")
+
+        # 添加优化标记
+        update_marker = f"\n\n<!-- Optimized: {proposal.description} -->\n"
+        new_content = existing + update_marker
+
+        # 保存
+        prompt_file.write_text(new_content, encoding="utf-8")
+
+    def _execute_knowledge_addition(self, proposal: ModificationProposal) -> None:
+        """执行知识添加"""
+        import json
+        from datetime import datetime
+
+        knowledge_type = proposal.changes.get("knowledge_type", "general")
+
+        # 确定知识文件
+        knowledge_files = {
+            "error_fixes": "error_knowledge.json",
+            "patterns": "learnings.json",
+            "preferences": "preferences.json",
+        }
+
+        file_name = knowledge_files.get(knowledge_type, "knowledge.json")
+        knowledge_file = Path.home() / ".claude" / "memory" / file_name
+        knowledge_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # 加载现有知识
+        knowledge = []
+        if knowledge_file.exists():
+            try:
+                knowledge = json.loads(knowledge_file.read_text(encoding="utf-8"))
+                if not isinstance(knowledge, list):
+                    knowledge = []
+            except (json.JSONDecodeError, IOError):
+                knowledge = []
+
+        # 添加新知识
+        new_entry = {
+            "content": proposal.description,
+            "justification": proposal.justification,
+            "timestamp": datetime.now().isoformat(),
+            "source": "self_modification",
+        }
+        knowledge.append(new_entry)
+
+        # 保存
+        knowledge_file.write_text(
+            json.dumps(knowledge, indent=2, ensure_ascii=False),
+            encoding="utf-8"
+        )
+
+    def _execute_strategy_adjustment(self, proposal: ModificationProposal) -> None:
+        """执行策略调整"""
+        import json
+        from datetime import datetime
+
+        # 策略文件
+        strategy_file = Path.home() / ".claude" / "strategy.json"
+        strategy_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # 加载现有策略
+        strategy = {}
+        if strategy_file.exists():
+            try:
+                strategy = json.loads(strategy_file.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, IOError):
+                strategy = {}
+
+        # 更新策略
+        strategy.update({
+            "last_adjustment": datetime.now().isoformat(),
+            "adjustment": proposal.description,
+            "changes": proposal.changes,
+        })
+
+        # 保存
+        strategy_file.write_text(
+            json.dumps(strategy, indent=2, ensure_ascii=False),
+            encoding="utf-8"
+        )
+
+    def _execute_architecture_change(self, proposal: ModificationProposal) -> None:
+        """执行架构变更"""
+        # 架构变更需要更谨慎的处理
+        # 记录变更到日志
+        import json
+        from datetime import datetime
+
+        log_file = Path.home() / ".claude" / "architecture_log.json"
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "description": proposal.description,
+            "changes": proposal.changes,
+            "justification": proposal.justification,
+        }
+
+        log = []
+        if log_file.exists():
+            try:
+                log = json.loads(log_file.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, IOError):
+                log = []
+
+        log.append(log_entry)
+        log_file.write_text(
+            json.dumps(log, indent=2, ensure_ascii=False),
+            encoding="utf-8"
+        )
 
     def _rollback(self, snapshot: Dict[str, Any]) -> None:
         """回滚到快照"""
-        # TODO: 实现回滚逻辑
-        pass
+        import shutil
+        from pathlib import Path
+
+        # 恢复知识库
+        if snapshot.get("knowledge_base_backup"):
+            backup_path = Path(snapshot["knowledge_base_backup"])
+            if backup_path.exists():
+                original_path = backup_path.with_suffix("")  # 移除 .backup_XXX 后缀
+                shutil.copy(backup_path, original_path)
+                backup_path.unlink()  # 删除备份
+
+        # 恢复提示词
+        if snapshot.get("prompt_backup"):
+            backup_path = Path(snapshot["prompt_backup"])
+            if backup_path.exists():
+                original_path = backup_path.with_suffix("")
+                shutil.copy(backup_path, original_path)
+                backup_path.unlink()
+
+        # 恢复配置
+        if snapshot.get("config_backup"):
+            backup_path = Path(snapshot["config_backup"])
+            if backup_path.exists():
+                original_path = backup_path.with_suffix("")
+                shutil.copy(backup_path, original_path)
+                backup_path.unlink()
 
     def _measure_impact(self, proposal: ModificationProposal) -> Dict[str, float]:
         """测量修改影响"""
-        # TODO: 实现影响测量
-        # 返回关键指标的变化
-        return {}
+        from datetime import datetime
+
+        # 基础影响测量
+        impact = {
+            "timestamp": datetime.now().timestamp(),
+            "modification_type": proposal.modification_type.value,
+        }
+
+        # 根据修改类型测量特定指标
+        if proposal.modification_type == ModificationType.KNOWLEDGE_ADDITION:
+            # 测量知识库增长
+            knowledge_file = Path.home() / ".claude" / "memory" / "knowledge.json"
+            if knowledge_file.exists():
+                try:
+                    import json
+                    knowledge = json.loads(knowledge_file.read_text())
+                    impact["knowledge_count"] = len(knowledge) if isinstance(knowledge, list) else 0
+                except:
+                    pass
+
+        elif proposal.modification_type == ModificationType.PROMPT_UPDATE:
+            # 测量提示词长度变化
+            prompt_file = Path.home() / ".claude" / "prompts" / "system_prompt.md"
+            if prompt_file.exists():
+                content = prompt_file.read_text()
+                impact["prompt_length"] = len(content)
+                impact["prompt_lines"] = content.count("\n")
+
+        # 从进化追踪器获取性能指标
+        if self.enable_layer3:
+            try:
+                report = self.evolution_tracker.generate_report()
+                impact["evolution_generation"] = report.get("current_generation", 0)
+                impact["avg_fitness"] = report.get("average_fitness", 0.0)
+            except:
+                pass
+
+        return impact

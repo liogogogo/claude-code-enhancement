@@ -10,6 +10,9 @@
 - meta_learning: 元学习算法
 - self_modification: 自我修改引擎
 - strategy_optimizer: 策略优化
+- feedback_collector: 反馈收集器 (打通闭环)
+- knowledge_retriever: 知识检索器 (让记忆工作)
+- llm_error_analyzer: LLM 错误分析器 (智能分析)
 """
 
 from .context_manager import (
@@ -43,6 +46,23 @@ from .unified import (
     EnhancementConfig,
     create_enhancer,
 )
+from .feedback_collector import (
+    FeedbackCollector,
+    FeedbackType,
+    FeedbackItem,
+    collect_from_hook,
+)
+from .knowledge_retriever import (
+    KnowledgeRetriever,
+    RetrievedKnowledge,
+    ContextInjection,
+    get_context_for_claude,
+)
+from .llm_error_analyzer import (
+    LLMErrorAnalyzer,
+    ErrorAnalysis,
+    analyze_error,
+)
 
 __all__ = [
     # Context Manager
@@ -72,4 +92,18 @@ __all__ = [
     "ClaudeCodeEnhancer",
     "EnhancementConfig",
     "create_enhancer",
+    # Feedback Collector
+    "FeedbackCollector",
+    "FeedbackType",
+    "FeedbackItem",
+    "collect_from_hook",
+    # Knowledge Retriever
+    "KnowledgeRetriever",
+    "RetrievedKnowledge",
+    "ContextInjection",
+    "get_context_for_claude",
+    # LLM Error Analyzer
+    "LLMErrorAnalyzer",
+    "ErrorAnalysis",
+    "analyze_error",
 ]
