@@ -3,31 +3,32 @@
 上下文查询工具
 
 用法:
-    python3 context_query.py "authentication flow"     # 搜索相关代码
-    python3 context_query.py --stats                   # 查看索引统计
-    python3 context_query.py --index                   # 重新索引项目
-    python3 context_query.py --context "fix bug"       # 获取查询上下文
+    python3 context_query.py search "authentication flow"
+    python3 context_query.py stats
+    python3 context_query.py index
+    python3 context_query.py context "fix bug"
+    python3 context_query.py prepare "fix bug" --show-trace
+    python3 context_query.py architecture
 """
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
-# 添加项目路径以导入 src 模块
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.core.context_manager import create_context_manager
+from src.core.unified import create_enhancer
 
 
 def get_project_path() -> Path:
     """获取当前项目路径"""
-    # 优先使用环境变量
     import os
+
     if "PROJECT_PATH" in os.environ:
         return Path(os.environ["PROJECT_PATH"])
-
-    # 否则使用当前目录
     return Path.cwd()
 
 
@@ -36,7 +37,6 @@ def cmd_search(args):
     project_path = get_project_path()
     cm = create_context_manager(project_path)
 
-    # 检查是否已索引
     stats = cm.get_stats()
     if stats["indexed_files"] == 0:
         print("项目尚未索引，正在索引...")
@@ -46,17 +46,14 @@ def cmd_search(args):
     print("-" * 60)
 
     results = cm.search(args.query, n_results=args.num)
-
     if not results:
         print("未找到相关代码")
         return
 
-    for i, (chunk, score) in enumerate(results, 1):
-        print(f"\n{i}. {chunk.file_path}:{chunk.start_line}-{chunk.end_line}")
+    for index, (chunk, score) in enumerate(results, 1):
+        print(f"\n{index}. {chunk.file_path}:{chunk.start_line}-{chunk.end_line}")
         print(f"   相似度: {score:.2%}")
         print(f"   语言: {chunk.language}")
-
-        # 显示代码片段
         lines = chunk.content.split("\n")
         preview_lines = lines[:args.preview] if len(lines) > args.preview else lines
         print("   ```")
@@ -71,7 +68,6 @@ def cmd_stats(args):
     """查看索引统计"""
     project_path = get_project_path()
     cm = create_context_manager(project_path)
-
     stats = cm.get_stats()
 
     print("=" * 50)
@@ -81,9 +77,8 @@ def cmd_stats(args):
     print(f"预估代码块: {stats['total_chunks']}")
     print(f"对话轮次: {stats['conversation_turns']}")
     print(f"向量存储: {'已启用' if stats['has_vector_store'] else '内存模式'}")
-
     if stats["summaries"]:
-        print(f"摘要层级: {[s.value for s in stats['summaries']]}")
+        print(f"摘要层级: {[summary.value for summary in stats['summaries']]}")
 
 
 def cmd_index(args):
@@ -112,83 +107,90 @@ def cmd_index(args):
 def cmd_context(args):
     """获取查询上下文"""
     project_path = get_project_path()
-    cm = create_context_manager(project_path)
+    enhancer = create_enhancer(project_path=project_path)
+    prepared = enhancer.prepare_task_context(args.query, max_chars=args.max_chars)
+    print(prepared["injection_text"] or prepared["knowledge_context"] or prepared["code_context"])
 
-    # 检查是否已索引
-    stats = cm.get_stats()
-    if stats["indexed_files"] == 0:
-        print("项目尚未索引，正在索引...")
-        cm.index_codebase()
 
-    context = cm.get_context_for_query(
-        args.query,
-        max_tokens=args.max_tokens,
-        include_summaries=not args.no_summary,
-    )
+def cmd_prepare(args):
+    """获取结构化增强上下文"""
+    project_path = get_project_path()
+    enhancer = create_enhancer(project_path=project_path)
+    prepared = enhancer.prepare_task_context(args.query, max_chars=args.max_chars)
 
-    print(context)
+    output = {
+        "query": prepared["query"],
+        "budget": prepared["budget"],
+        "selected_items": prepared["selected_items"],
+        "user_preferences": prepared["user_preferences"],
+        "past_fixes": prepared["past_fixes"],
+        "knowledge_context": prepared["knowledge_context"],
+        "code_context": prepared["code_context"],
+        "project_knowledge": prepared["project_knowledge"],
+    }
+    if args.show_trace:
+        output["retrieval_trace"] = prepared["retrieval_trace"]
+    if args.show_architecture:
+        output["architecture_overview"] = prepared["architecture_overview"]
+
+    print(json.dumps(output, indent=2, ensure_ascii=False))
+
+
+def cmd_architecture(args):
+    """输出增强架构图"""
+    project_path = get_project_path()
+    enhancer = create_enhancer(project_path=project_path)
+    print(enhancer.render_architecture_diagram())
 
 
 def cmd_clear(args):
     """清空索引"""
     project_path = get_project_path()
     cm = create_context_manager(project_path)
-
     cm.clear_all()
     print("✅ 索引已清空")
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="上下文查询工具 - 搜索项目代码"
-    )
+    parser = argparse.ArgumentParser(description="上下文查询工具 - 搜索和准备增强上下文")
     subparsers = parser.add_subparsers(dest="command", help="命令")
 
-    # search 命令
     search_parser = subparsers.add_parser("search", help="搜索相关代码")
     search_parser.add_argument("query", help="搜索查询")
     search_parser.add_argument("-n", "--num", type=int, default=10, help="返回结果数")
     search_parser.add_argument("-p", "--preview", type=int, default=5, help="预览行数")
     search_parser.set_defaults(func=cmd_search)
 
-    # stats 命令
     stats_parser = subparsers.add_parser("stats", help="查看索引统计")
     stats_parser.set_defaults(func=cmd_stats)
 
-    # index 命令
     index_parser = subparsers.add_parser("index", help="索引项目")
-    index_parser.add_argument(
-        "--patterns", nargs="+", help="文件模式 (如 **/*.py)"
-    )
-    index_parser.add_argument(
-        "--exclude", nargs="+", help="排除模式"
-    )
-    index_parser.add_argument(
-        "--chunk-size", type=int, default=500, help="代码块大小"
-    )
+    index_parser.add_argument("--patterns", nargs="+", help="文件模式 (如 **/*.py)")
+    index_parser.add_argument("--exclude", nargs="+", help="排除模式")
+    index_parser.add_argument("--chunk-size", type=int, default=500, help="代码块大小")
     index_parser.set_defaults(func=cmd_index)
 
-    # context 命令
     context_parser = subparsers.add_parser("context", help="获取查询上下文")
     context_parser.add_argument("query", help="查询文本")
-    context_parser.add_argument(
-        "--max-tokens", type=int, default=100000, help="最大 token 数"
-    )
-    context_parser.add_argument(
-        "--no-summary", action="store_true", help="不包含摘要"
-    )
+    context_parser.add_argument("--max-chars", type=int, default=2400, help="知识上下文字符预算")
     context_parser.set_defaults(func=cmd_context)
 
-    # clear 命令
+    prepare_parser = subparsers.add_parser("prepare", help="获取结构化增强上下文")
+    prepare_parser.add_argument("query", help="查询文本")
+    prepare_parser.add_argument("--max-chars", type=int, default=2400, help="知识上下文字符预算")
+    prepare_parser.add_argument("--show-trace", action="store_true", help="显示检索 trace")
+    prepare_parser.add_argument("--show-architecture", action="store_true", help="显示架构图")
+    prepare_parser.set_defaults(func=cmd_prepare)
+
+    architecture_parser = subparsers.add_parser("architecture", help="显示增强架构图")
+    architecture_parser.set_defaults(func=cmd_architecture)
+
     clear_parser = subparsers.add_parser("clear", help="清空索引")
     clear_parser.set_defaults(func=cmd_clear)
 
     args = parser.parse_args()
-
-    # 默认命令：如果没有指定命令，把第一个参数当作搜索查询
     if args.command is None:
         if len(sys.argv) > 1 and not sys.argv[1].startswith("-"):
-            # 创建一个简单的搜索
             class DefaultArgs:
                 query = sys.argv[1]
                 num = 10

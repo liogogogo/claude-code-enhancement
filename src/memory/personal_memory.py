@@ -768,6 +768,7 @@ class PersonalMemory:
         # 权限相关存储
         self.permission_decisions: dict[str, PermissionDecision] = {}
         self.permission_patterns: dict[str, PermissionPattern] = {}
+        self.retrieval_feedback: dict[str, dict] = {}
 
         # 加载已有记忆
         self._load_all()
@@ -780,8 +781,27 @@ class PersonalMemory:
         self._load_error_fixes()
         self._load_workflows()
         self._load_permissions()
+        self._load_retrieval_feedback()
 
-    # ==================== 用户偏好 ====================
+    def _load_retrieval_feedback(self):
+        """加载检索反馈"""
+        feedback_file = self.memory_dir / "retrieval_feedback.json"
+        if not feedback_file.exists():
+            return
+
+        try:
+            self.retrieval_feedback = json.loads(feedback_file.read_text())
+        except Exception as e:
+            print(f"Warning: Failed to load retrieval feedback: {e}")
+            self.retrieval_feedback = {}
+
+    def _save_retrieval_feedback(self):
+        """保存检索反馈"""
+        feedback_file = self.memory_dir / "retrieval_feedback.json"
+        feedback_file.write_text(
+            json.dumps(self.retrieval_feedback, indent=2, ensure_ascii=False)
+        )
+
 
     def _load_preferences(self):
         """加载用户偏好"""
@@ -874,11 +894,27 @@ class PersonalMemory:
                     confidence=0.6,
                 )
 
+    def get_injectable_preferences(
+        self,
+        categories: Optional[list[PreferenceCategory]] = None,
+        min_confidence: float = 0.6,
+        limit: int = 5,
+    ) -> list[UserPreference]:
+        """获取适合注入上下文的偏好"""
+        preferences = list(self.preferences.values())
+        if categories:
+            allowed = {category.value for category in categories}
+            preferences = [p for p in preferences if p.category.value in allowed]
+
+        preferences = [p for p in preferences if p.confidence >= min_confidence]
+        preferences.sort(key=lambda pref: pref.confidence, reverse=True)
+        return preferences[:limit]
+
+
     def get_all_preferences(self) -> dict[str, UserPreference]:
         """获取所有偏好"""
         return self.preferences.copy()
 
-    # ==================== 命令记录 ====================
 
     def _load_commands(self):
         """加载命令记录"""
@@ -1108,6 +1144,69 @@ class PersonalMemory:
 
         matches.sort(key=lambda f: f.success_rate, reverse=True)
         return matches[:5]
+
+    def get_ranked_error_fixes(
+        self,
+        error_message: str,
+        limit: int = 5,
+        min_success_rate: float = 0.0,
+    ) -> list[ErrorFix]:
+        """按成功率和匹配度排序错误修复经验"""
+        matches = []
+        lowered_message = error_message.lower()
+
+        for fix in self.error_fixes:
+            pattern = fix.error_pattern.lower()
+            if pattern in lowered_message or lowered_message in pattern:
+                matches.append(fix)
+
+        matches.sort(
+            key=lambda fix: (fix.success_rate, fix.success_count, -fix.fail_count),
+            reverse=True,
+        )
+        matches = [fix for fix in matches if fix.success_rate >= min_success_rate]
+        return matches[:limit]
+
+    def record_retrieval_feedback(
+        self,
+        key: str,
+        success: bool,
+        metadata: Optional[dict] = None,
+    ) -> None:
+        """记录检索结果的使用反馈"""
+        record = self.retrieval_feedback.get(
+            key,
+            {
+                "success_count": 0,
+                "failure_count": 0,
+                "last_used": None,
+                "metadata": {},
+            },
+        )
+
+        if success:
+            record["success_count"] += 1
+        else:
+            record["failure_count"] += 1
+
+        record["last_used"] = datetime.now().isoformat()
+        if metadata:
+            record["metadata"].update(metadata)
+
+        self.retrieval_feedback[key] = record
+        self._save_retrieval_feedback()
+
+    def get_retrieval_feedback(self, key: str) -> dict:
+        """获取检索反馈统计"""
+        return self.retrieval_feedback.get(
+            key,
+            {
+                "success_count": 0,
+                "failure_count": 0,
+                "last_used": None,
+                "metadata": {},
+            },
+        )
 
     # ==================== 工作流模板 ====================
 
@@ -1385,6 +1484,7 @@ class PersonalMemory:
             "workflows": len(self.workflows),
             "permission_decisions": len(self.permission_decisions),
             "permission_patterns": len(self.permission_patterns),
+            "retrieval_feedback": len(self.retrieval_feedback),
             "most_used_commands": self.get_frequent_commands(5),
             "recent_projects": len(self.get_recent_projects(5)),
         }

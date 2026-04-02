@@ -172,6 +172,10 @@ def handle_pre_tool_use(input_data: dict) -> dict:
             "tool_use_id": tool_use_id,
             "permission": permission,
             "timestamp": datetime.now().isoformat(),
+            "tool_name": tool_name,
+            "tool_input": tool_input,
+            "cwd": input_data.get("cwd", ""),
+            "hook_event_name": input_data.get("hook_event_name", ""),
         }
         pending_file.write_text(json.dumps(pending_data))
 
@@ -200,12 +204,22 @@ def handle_post_tool_use(input_data: dict) -> dict:
 
         pending_data = json.loads(pending_file.read_text())
         permission = pending_data.get("permission", "")
+        decision_context = {
+            "tool_name": pending_data.get("tool_name", ""),
+            "cwd": pending_data.get("cwd", ""),
+            "hook_event_name": pending_data.get("hook_event_name", ""),
+            "timestamp": pending_data.get("timestamp", ""),
+        }
 
         # 记录权限决策
         if _lazy_import() and permission:
             try:
                 memory = _PermissionMemory()
-                memory.record_permission_decision(permission=permission, action="allow")
+                memory.record_permission_decision(
+                    permission=permission,
+                    action="allow",
+                    context=decision_context,
+                )
                 debug_log(f"Recorded: {permission}")
             except Exception as e:
                 debug_log(f"Record error: {e}")
@@ -215,6 +229,14 @@ def handle_post_tool_use(input_data: dict) -> dict:
         debug_log(f"PostToolUse error: {e}")
 
     return {}
+
+
+def _pattern_is_recent(pattern_obj) -> bool:
+    """权限模式是否足够新鲜"""
+    last_seen = getattr(pattern_obj, "last_seen", None)
+    if not last_seen:
+        return False
+    return (datetime.now() - last_seen).days <= 30
 
 
 def handle_permission_request(input_data: dict) -> dict:
@@ -235,7 +257,7 @@ def handle_permission_request(input_data: dict) -> dict:
                 patterns = memory.get_permission_patterns(min_count=2)
 
                 for pp in patterns:
-                    if pp.pattern == pattern and pp.count >= 3:
+                    if pp.pattern == pattern and pp.count >= 3 and _pattern_is_recent(pp):
                         debug_log(f"Auto-approve: {pattern}")
                         return {
                             "hookSpecificOutput": {

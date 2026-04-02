@@ -5,16 +5,18 @@ Claude Code 增强集成模块
 - ContextManager: 智能上下文管理
 - PersonalMemory: 个性化记忆
 - ProjectKnowledgeLearner: 项目知识学习
+- KnowledgeRetriever: 检索、排序和注入增强知识
 
 提供统一的增强接口
 """
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional, Union, List, Dict, Tuple, Set
+from typing import Any, Dict, List, Optional, Union
 
-from .context_manager import ContextManager, ContextLevel
-from .project_knowledge import ProjectKnowledgeLearner
+from .context_manager import ContextManager
+from .knowledge_retriever import KnowledgeRetriever
+from .project_knowledge_learner import ProjectKnowledgeLearner
 from ..memory.personal_memory import PersonalMemory, PreferenceCategory
 
 
@@ -22,48 +24,30 @@ from ..memory.personal_memory import PersonalMemory, PreferenceCategory
 class EnhancementConfig:
     """增强配置"""
 
-    # 上下文管理
     enable_context_manager: bool = True
     max_context_tokens: int = 1_000_000
     embedding_model: str = "all-MiniLM-L6-v2"
-
-    # 个性化记忆
     enable_personal_memory: bool = True
-
-    # 项目知识
     enable_project_learning: bool = True
     auto_learn_on_start: bool = True
-
-    # 项目路径
     project_path: Optional[Path] = None
 
 
 class ClaudeCodeEnhancer:
-    """
-    Claude Code 增强器
-
-    整合所有增强功能，提供统一接口
-    """
+    """Claude Code 增强器"""
 
     def __init__(self, config: Optional[EnhancementConfig] = None):
-        """
-        初始化增强器
-
-        Args:
-            config: 增强配置
-        """
         self.config = config or EnhancementConfig()
         self.project_path = self.config.project_path or Path.cwd()
 
-        # 初始化组件
         self.context_manager: Optional[ContextManager] = None
         self.personal_memory: Optional[PersonalMemory] = None
         self.project_learner: Optional[ProjectKnowledgeLearner] = None
+        self.knowledge_retriever: Optional[KnowledgeRetriever] = None
 
         self._initialize()
 
     def _initialize(self):
-        """初始化组件"""
         if self.config.enable_context_manager:
             self.context_manager = ContextManager(
                 project_path=self.project_path,
@@ -73,51 +57,32 @@ class ClaudeCodeEnhancer:
 
         if self.config.enable_personal_memory:
             self.personal_memory = PersonalMemory()
+            self.knowledge_retriever = KnowledgeRetriever(self.personal_memory.memory_dir)
+        else:
+            self.knowledge_retriever = KnowledgeRetriever()
 
         if self.config.enable_project_learning:
             self.project_learner = ProjectKnowledgeLearner(self.project_path)
             if self.config.auto_learn_on_start:
-                self.project_learner.analyze_project()
+                self.project_learner.learn()
 
     # ==================== 上下文管理 ====================
 
     def search_code(self, query: str, n_results: int = 10) -> list:
-        """
-        搜索代码
-
-        Args:
-            query: 查询
-            n_results: 结果数量
-
-        Returns:
-            搜索结果
-        """
         if not self.context_manager:
             return []
         return self.context_manager.search(query, n_results)
 
     def get_context_for_query(self, query: str, max_tokens: int = 100_000) -> str:
-        """
-        获取查询上下文
-
-        Args:
-            query: 查询
-            max_tokens: 最大 token
-
-        Returns:
-            上下文字符串
-        """
         if not self.context_manager:
             return ""
         return self.context_manager.get_context_for_query(query, max_tokens)
 
     def add_conversation_turn(self, role: str, content: str):
-        """添加对话轮次"""
         if self.context_manager:
             self.context_manager.add_conversation_turn(role, content)
 
     def compact_conversation(self) -> str:
-        """压缩对话"""
         if not self.context_manager:
             return ""
         return self.context_manager.compact_conversation()
@@ -131,15 +96,6 @@ class ClaudeCodeEnhancer:
         value: Any,
         description: str = "",
     ):
-        """
-        记住偏好
-
-        Args:
-            category: 类别
-            key: 键
-            value: 值
-            description: 描述
-        """
         if not self.personal_memory:
             return
 
@@ -151,17 +107,6 @@ class ClaudeCodeEnhancer:
         self.personal_memory.set_preference(cat, key, value, description)
 
     def recall_preference(self, category: str, key: str, default: Any = None) -> Any:
-        """
-        回忆偏好
-
-        Args:
-            category: 类别
-            key: 键
-            default: 默认值
-
-        Returns:
-            偏好值
-        """
         if not self.personal_memory:
             return default
 
@@ -173,26 +118,15 @@ class ClaudeCodeEnhancer:
         return self.personal_memory.get_preference(cat, key, default)
 
     def record_command(self, command: str, success: bool = True):
-        """记录命令使用"""
         if self.personal_memory:
             self.personal_memory.record_command(command, success)
 
     def get_command_suggestions(self, prefix: str = "") -> List[str]:
-        """获取命令建议"""
         if not self.personal_memory:
             return []
         return self.personal_memory.get_command_suggestions(prefix)
 
     def find_error_fix(self, error_message: str) -> list:
-        """
-        查找错误修复
-
-        Args:
-            error_message: 错误信息
-
-        Returns:
-            修复建议列表
-        """
         if not self.personal_memory:
             return []
         return self.personal_memory.find_fix_for_error(error_message)
@@ -204,7 +138,6 @@ class ClaudeCodeEnhancer:
         fix_description: str,
         fix_code: str,
     ):
-        """记录错误修复"""
         if self.personal_memory:
             self.personal_memory.record_error_fix(
                 error_pattern,
@@ -216,98 +149,236 @@ class ClaudeCodeEnhancer:
     # ==================== 项目知识 ====================
 
     def learn_project(self) -> dict:
-        """
-        学习项目
-
-        Returns:
-            学习统计
-        """
         if not self.project_learner:
             return {}
-        return self.project_learner.analyze_project()
+        knowledge = self.project_learner.learn()
+        return knowledge.to_dict()
 
     def get_project_conventions(self) -> list:
-        """获取项目约定"""
         if not self.project_learner:
             return []
-        return self.project_learner.conventions
+        knowledge = self.project_learner.load_knowledge()
+        if not knowledge:
+            return []
+
+        conventions = []
+        if knowledge.naming:
+            conventions.append({"category": "naming", **knowledge.naming.to_dict()})
+        if knowledge.style:
+            conventions.append({"category": "style", **knowledge.style.to_dict()})
+        if knowledge.custom_rules:
+            conventions.extend(
+                {"category": "custom_rule", "rule": rule} for rule in knowledge.custom_rules
+            )
+        return conventions
 
     def get_project_patterns(self) -> list:
-        """获取项目模式"""
         if not self.project_learner:
             return []
-        return self.project_learner.patterns
+        knowledge = self.project_learner.load_knowledge()
+        if not knowledge:
+            return []
+        return knowledge.common_patterns
 
     def generate_claudemd(self) -> str:
-        """生成 CLAUDE.md 内容"""
         if not self.project_learner:
             return ""
-        return self.project_learner.generate_claudemd()
+        return self.project_learner.generate_style_guide()
+
+    def render_architecture_diagram(self) -> str:
+        return "\n".join(
+            [
+                "SessionStartHook / ContextQuery / ProjectKnowledgeHook / PermissionLearningHook",
+                "        │",
+                "        ▼",
+                "ClaudeCodeEnhancer  (统一门面 / 编排入口)",
+                "        │",
+                "        ├── ContextManager",
+                "        │     └── 代码索引、chunk 检索、查询上下文",
+                "        │",
+                "        ├── KnowledgeRetriever",
+                "        │     └── 偏好 / 错误修复 / 项目知识 检索、排序、预算控制、trace",
+                "        │",
+                "        ├── PersonalMemory",
+                "        │     └── preferences / commands / error_fixes / permissions",
+                "        │",
+                "        ├── ProjectKnowledgeLearner",
+                "        │     └── 项目结构、命名、风格、依赖知识",
+                "        │",
+                "        └── EnhancementPipeline",
+                "              └── 可选评估/闭环载体，承接 prepared context 和反馈",
+            ]
+        )
 
     # ==================== 统一接口 ====================
 
-    def prepare_context(self, query: str) -> dict:
-        """
-        准备完整的上下文
-
-        Args:
-            query: 查询
-
-        Returns:
-            上下文数据
-        """
-        context = {
+    def prepare_task_context(
+        self,
+        query: str,
+        files: Optional[List[str]] = None,
+        errors: Optional[List[str]] = None,
+        max_items: int = 10,
+        max_chars: int = 2400,
+    ) -> dict:
+        context_request = {
+            "task": query,
             "query": query,
-            "code_context": "",
-            "user_preferences": {},
-            "project_conventions": [],
-            "past_fixes": [],
+            "files": files or [],
+            "errors": errors or [],
+            "project_path": str(self.project_path),
         }
 
-        # 代码上下文
+        code_context = ""
         if self.context_manager:
-            context["code_context"] = self.get_context_for_query(query)
+            code_context = self.get_context_for_query(query)
 
-        # 用户偏好
-        if self.personal_memory:
-            prefs = self.personal_memory.get_all_preferences()
-            context["user_preferences"] = {
-                k: v.value for k, v in prefs.items()
-            }
+        injection = None
+        if self.knowledge_retriever:
+            injection = self.knowledge_retriever.generate_context_injection(
+                context_request,
+                max_items=max_items,
+                max_chars=max_chars,
+            )
 
-        # 项目约定
+        project_knowledge = None
         if self.project_learner:
-            context["project_conventions"] = [
-                c.to_dict() for c in self.project_learner.conventions
+            project_knowledge = self.project_learner.load_knowledge()
+            if project_knowledge is None and self.config.auto_learn_on_start:
+                project_knowledge = self.project_learner.learn()
+
+        injectable_preferences = []
+        ranked_error_fixes = []
+        if self.personal_memory:
+            injectable_preferences = [
+                {
+                    "category": pref.category.value,
+                    "key": pref.key,
+                    "value": pref.value,
+                    "confidence": pref.confidence,
+                    "description": pref.description,
+                }
+                for pref in self.personal_memory.get_injectable_preferences(limit=3)
+            ]
+            ranked_error_fixes = [
+                {
+                    "error_pattern": fix.error_pattern,
+                    "error_type": fix.error_type,
+                    "fix_description": fix.fix_description,
+                    "success_rate": fix.success_rate,
+                }
+                for fix in self.personal_memory.get_ranked_error_fixes(query, limit=3)
             ]
 
-        # 历史修复
-        if self.personal_memory:
-            context["past_fixes"] = self.personal_memory.find_fix_for_error(query)
+        project_summary = None
+        if project_knowledge:
+            project_summary = {
+                "project_name": project_knowledge.project_name,
+                "structure": project_knowledge.structure.to_dict()
+                if project_knowledge.structure
+                else None,
+                "naming": project_knowledge.naming.to_dict()
+                if project_knowledge.naming
+                else None,
+                "style": project_knowledge.style.to_dict()
+                if project_knowledge.style
+                else None,
+                "common_patterns": project_knowledge.common_patterns,
+                "custom_rules": project_knowledge.custom_rules,
+            }
 
-        return context
+        selected_items = []
+        retrieval_trace = []
+        knowledge_context = ""
+        budget = {}
+        if injection:
+            selected_items = [
+                {
+                    "knowledge_type": item.knowledge_type,
+                    "content": item.content,
+                    "source": item.source,
+                    "source_id": item.source_id,
+                    "relevance": item.relevance,
+                    "metadata": item.metadata,
+                }
+                for item in injection.selected_items
+            ]
+            retrieval_trace = [item.to_dict() for item in injection.trace]
+            knowledge_context = injection.to_markdown()
+            budget = injection.budget
 
-    def learn_from_session(
+        return {
+            "query": query,
+            "code_context": code_context,
+            "knowledge_context": knowledge_context,
+            "selected_items": selected_items,
+            "retrieval_trace": retrieval_trace,
+            "budget": budget,
+            "user_preferences": injectable_preferences,
+            "past_fixes": ranked_error_fixes,
+            "project_conventions": self.get_project_conventions(),
+            "project_patterns": self.get_project_patterns(),
+            "project_knowledge": project_summary,
+            "architecture_overview": self.render_architecture_diagram(),
+            "injection_text": "\n\n".join(
+                part for part in [knowledge_context, code_context] if part
+            ),
+        }
+
+    def prepare_context(self, query: str) -> dict:
+        prepared = self.prepare_task_context(query)
+        return {
+            "query": prepared["query"],
+            "code_context": prepared["code_context"],
+            "user_preferences": {
+                item["key"]: item["value"] for item in prepared["user_preferences"]
+            },
+            "project_conventions": prepared["project_conventions"],
+            "past_fixes": prepared["past_fixes"],
+            "knowledge_context": prepared["knowledge_context"],
+            "retrieval_trace": prepared["retrieval_trace"],
+        }
+
+    def record_task_outcome(
         self,
-        actions: List[dict],
-        outcomes: dict,
-    ):
-        """
-        从会话中学习
+        query: str,
+        success: bool,
+        retrieval_trace: Optional[List[Dict[str, Any]]] = None,
+        command: str = "",
+        error_message: str = "",
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        if self.personal_memory and command:
+            self.personal_memory.record_command(command, success, context=query)
 
-        Args:
-            actions: 执行的动作列表
-            outcomes: 结果统计
-        """
-        for action in actions:
-            # 记录命令
-            if action.get("type") == "command":
-                self.record_command(
-                    action["command"],
-                    action.get("success", True),
+        if self.personal_memory and error_message:
+            self.personal_memory.record_error_fix(
+                error_pattern=error_message,
+                error_type="task_outcome",
+                fix_description=query,
+                fix_code="",
+                success=success,
+            )
+
+        if self.personal_memory and retrieval_trace:
+            for item in retrieval_trace:
+                if not item.get("selected"):
+                    continue
+                key = f"{item.get('knowledge_type', 'unknown')}:{item.get('source_id', '')}"
+                self.personal_memory.record_retrieval_feedback(
+                    key,
+                    success,
+                    metadata={
+                        "query": query,
+                        "reason": item.get("reason", ""),
+                        **(metadata or {}),
+                    },
                 )
 
-            # 记录错误修复
+    def learn_from_session(self, actions: List[dict], outcomes: dict):
+        for action in actions:
+            if action.get("type") == "command":
+                self.record_command(action["command"], action.get("success", True))
+
             if action.get("type") == "fix":
                 self.record_error_fix(
                     action.get("error_pattern", ""),
@@ -316,42 +387,49 @@ class ClaudeCodeEnhancer:
                     action.get("code", ""),
                 )
 
-            # 项目学习
-            if self.project_learner:
-                self.project_learner.learn_from_interaction(
-                    action.get("type", ""),
-                    action.get("context", {}),
-                    "success" if action.get("success") else "failure",
-                )
+        self.record_task_outcome(
+            query=outcomes.get("query", "session"),
+            success=outcomes.get("success", True),
+            retrieval_trace=outcomes.get("retrieval_trace", []),
+            command=outcomes.get("command", ""),
+            error_message=outcomes.get("error_message", ""),
+            metadata=outcomes,
+        )
 
     def get_stats(self) -> dict:
-        """获取统计信息"""
         stats = {
             "context_manager": None,
             "personal_memory": None,
             "project_learner": None,
+            "knowledge_retriever": None,
         }
 
         if self.context_manager:
             stats["context_manager"] = self.context_manager.get_stats()
-
         if self.personal_memory:
             stats["personal_memory"] = self.personal_memory.get_stats()
-
         if self.project_learner:
-            stats["project_learner"] = self.project_learner.get_stats()
+            knowledge = self.project_learner.load_knowledge()
+            stats["project_learner"] = {
+                "project_path": str(self.project_path),
+                "knowledge_loaded": knowledge is not None,
+                "project_name": knowledge.project_name if knowledge else None,
+            }
+        if self.knowledge_retriever:
+            stats["knowledge_retriever"] = {
+                "usage_stats": len(self.knowledge_retriever.usage_stats),
+                "memory_path": str(self.knowledge_retriever.memory_path),
+            }
 
         return stats
 
     def export_all(self, export_dir: Path):
-        """导出所有数据"""
         export_dir.mkdir(parents=True, exist_ok=True)
 
         if self.personal_memory:
             self.personal_memory.export_memory(export_dir / "memory_export.json")
 
         if self.context_manager:
-            # 上下文管理器已有持久化，复制即可
             import shutil
 
             context_dir = export_dir / "context"
@@ -361,18 +439,12 @@ class ClaudeCodeEnhancer:
                 shutil.copytree(src_dir, context_dir, dirs_exist_ok=True)
 
     def clear_all(self):
-        """清空所有数据"""
         if self.context_manager:
             self.context_manager.clear_all()
 
-        # 个人记忆不清空，保留用户偏好
 
 
-# 便捷函数
-def create_enhancer(
-    project_path: Union[str, Path] = None,
-    **kwargs,
-) -> ClaudeCodeEnhancer:
+def create_enhancer(project_path: Union[str, Path] = None, **kwargs) -> ClaudeCodeEnhancer:
     """创建增强器"""
     config = EnhancementConfig(
         project_path=Path(project_path) if project_path else Path.cwd(),
