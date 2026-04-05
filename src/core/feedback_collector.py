@@ -19,6 +19,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from .durable_knowledge import DurableKnowledgeLayer
+
 
 class FeedbackType(Enum):
     """反馈类型"""
@@ -70,7 +72,7 @@ class FeedbackCollector:
         Args:
             memory_path: 记忆存储路径
         """
-        self.memory_path = memory_path or Path.home() / ".claude" / "memory"
+        self.memory_path = memory_path or DurableKnowledgeLayer.default_memory_root()
         self.memory_path.mkdir(parents=True, exist_ok=True)
 
         # 会话内的反馈缓存

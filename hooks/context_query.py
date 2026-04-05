@@ -8,6 +8,7 @@
     python3 context_query.py index
     python3 context_query.py context "fix bug"
     python3 context_query.py prepare "fix bug" --show-trace
+    python3 context_query.py prepare "fix bug" --no-code-index
     python3 context_query.py architecture
 """
 
@@ -20,7 +21,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.core.context_manager import create_context_manager
-from src.core.unified import create_enhancer
+from src.core.durable_knowledge import DurableKnowledgeLayer, DurableKnowledgeSettings
 
 
 def get_project_path() -> Path:
@@ -30,6 +31,27 @@ def get_project_path() -> Path:
     if "PROJECT_PATH" in os.environ:
         return Path(os.environ["PROJECT_PATH"])
     return Path.cwd()
+
+
+def prepare_merged_task_context(
+    project_path: Path,
+    query: str,
+    *,
+    max_chars: int = 2400,
+    include_code_index: bool = True,
+) -> dict:
+    """
+    持久资产层 + 可选代码索引上下文（与 ClaudeCodeEnhancer.prepare_task_context 对齐）。
+    Hooks 直接走 DurableKnowledgeLayer，避免经过完整 Enhancer 门面。
+    """
+    assets = DurableKnowledgeLayer(project_path, DurableKnowledgeSettings())
+    bundle = assets.build_asset_bundle(query, max_chars=max_chars)
+    code_context = ""
+    if include_code_index:
+        cm = create_context_manager(project_path)
+        if cm.get_stats().get("indexed_files", 0):
+            code_context = cm.get_context_for_query(query)
+    return DurableKnowledgeLayer.merge_code_context(bundle, code_context)
 
 
 def cmd_search(args):
@@ -107,16 +129,24 @@ def cmd_index(args):
 def cmd_context(args):
     """获取查询上下文"""
     project_path = get_project_path()
-    enhancer = create_enhancer(project_path=project_path)
-    prepared = enhancer.prepare_task_context(args.query, max_chars=args.max_chars)
+    prepared = prepare_merged_task_context(
+        project_path,
+        args.query,
+        max_chars=args.max_chars,
+        include_code_index=not args.no_code_index,
+    )
     print(prepared["injection_text"] or prepared["knowledge_context"] or prepared["code_context"])
 
 
 def cmd_prepare(args):
     """获取结构化增强上下文"""
     project_path = get_project_path()
-    enhancer = create_enhancer(project_path=project_path)
-    prepared = enhancer.prepare_task_context(args.query, max_chars=args.max_chars)
+    prepared = prepare_merged_task_context(
+        project_path,
+        args.query,
+        max_chars=args.max_chars,
+        include_code_index=not args.no_code_index,
+    )
 
     output = {
         "query": prepared["query"],
@@ -138,9 +168,11 @@ def cmd_prepare(args):
 
 def cmd_architecture(args):
     """输出增强架构图"""
-    project_path = get_project_path()
-    enhancer = create_enhancer(project_path=project_path)
-    print(enhancer.render_architecture_diagram())
+    print(DurableKnowledgeLayer.architecture_diagram())
+    # 与默认 EnhancementConfig（启用 ContextManager）时的说明一致
+    print(
+        "\n(ContextManager: optional — codebase index / conversation compaction)"
+    )
 
 
 def cmd_clear(args):
@@ -173,11 +205,21 @@ def main():
     context_parser = subparsers.add_parser("context", help="获取查询上下文")
     context_parser.add_argument("query", help="查询文本")
     context_parser.add_argument("--max-chars", type=int, default=2400, help="知识上下文字符预算")
+    context_parser.add_argument(
+        "--no-code-index",
+        action="store_true",
+        help="仅持久资产注入，不拼接代码库检索上下文",
+    )
     context_parser.set_defaults(func=cmd_context)
 
     prepare_parser = subparsers.add_parser("prepare", help="获取结构化增强上下文")
     prepare_parser.add_argument("query", help="查询文本")
     prepare_parser.add_argument("--max-chars", type=int, default=2400, help="知识上下文字符预算")
+    prepare_parser.add_argument(
+        "--no-code-index",
+        action="store_true",
+        help="仅持久资产，不包含已索引代码块上下文",
+    )
     prepare_parser.add_argument("--show-trace", action="store_true", help="显示检索 trace")
     prepare_parser.add_argument("--show-architecture", action="store_true", help="显示架构图")
     prepare_parser.set_defaults(func=cmd_prepare)

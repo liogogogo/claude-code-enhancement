@@ -20,7 +20,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.core.project_knowledge_learner import ProjectKnowledgeLearner
+from src.core.durable_knowledge import DurableKnowledgeLayer
 
 
 def get_project_knowledge_context(project_path: Path) -> str:
@@ -33,8 +33,10 @@ def get_project_knowledge_context(project_path: Path) -> str:
     Returns:
         上下文字符串，用于注入到 Claude 的提示中
     """
-    learner = ProjectKnowledgeLearner(project_path)
-    knowledge = learner.load_knowledge()
+    layer = DurableKnowledgeLayer.for_project_knowledge_only(project_path)
+    if not layer.project_learner:
+        return ""
+    knowledge = layer.project_learner.load_knowledge()
 
     if not knowledge:
         return ""

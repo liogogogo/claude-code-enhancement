@@ -33,8 +33,8 @@ from .layer2.cognitive import ErrorAnalyzer, ReasoningEngine
 # Layer 3 (简化版)
 from .layer3.meta import DecisionEngine, ExecutionTracker
 
-# Memory
-from .memory.personal_memory import PersonalMemory
+# Memory（经耐久资产层，与 hooks / applier 同一入口）
+from .core.durable_knowledge import DurableKnowledgeLayer
 
 
 class EnhancementPipeline:
@@ -90,8 +90,9 @@ class EnhancementPipeline:
         self.decision_engine = DecisionEngine()
         self.tracker = ExecutionTracker()
 
-        # Memory
-        self.memory = PersonalMemory()
+        # Memory（不挂项目学习，避免管道每次跑扫描）
+        self._assets = DurableKnowledgeLayer.for_hook_personal_memory(self.project_path)
+        self.memory = DurableKnowledgeLayer.require_personal_memory(self._assets)
 
         # 运行统计
         self.stats = {

@@ -41,6 +41,10 @@ from .project_knowledge import (
     KnowledgeType,
     learn_project,
 )
+from .durable_knowledge import (
+    DurableKnowledgeLayer,
+    DurableKnowledgeSettings,
+)
 from .unified import (
     ClaudeCodeEnhancer,
     EnhancementConfig,
@@ -88,6 +92,9 @@ __all__ = [
     "ProjectConvention",
     "KnowledgeType",
     "learn_project",
+    # Durable asset layer
+    "DurableKnowledgeLayer",
+    "DurableKnowledgeSettings",
     # Unified
     "ClaudeCodeEnhancer",
     "EnhancementConfig",

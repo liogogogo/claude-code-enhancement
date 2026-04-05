@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .project_knowledge_learner import ProjectKnowledgeLearner
+from ..memory.personal_memory import PersonalMemory
 
 
 @dataclass
@@ -100,7 +101,7 @@ class KnowledgeRetriever:
     }
 
     def __init__(self, memory_path: Optional[Path] = None):
-        self.memory_path = memory_path or Path.home() / ".claude" / "memory"
+        self.memory_path = memory_path or PersonalMemory.default_storage_dir()
         self.memory_path.mkdir(parents=True, exist_ok=True)
 
         self._cache: Dict[str, List[dict]] = {}

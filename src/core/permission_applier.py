@@ -19,6 +19,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from .durable_knowledge import DurableKnowledgeLayer
+
 
 class PermissionApplier:
     """
@@ -32,7 +34,7 @@ class PermissionApplier:
         memory_path: Optional[Path] = None,
         settings_path: Optional[Path] = None,
     ):
-        self.memory_path = memory_path or Path.home() / ".claude" / "memory"
+        self.memory_path = memory_path or DurableKnowledgeLayer.default_memory_root()
         self.settings_path = settings_path or Path.home() / ".claude" / "settings.json"
 
     def get_learned_permissions(self, min_count: int = 3) -> Dict[str, dict]:

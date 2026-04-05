@@ -748,6 +748,11 @@ class PersonalMemory:
     - 权限决策记录与学习
     """
 
+    @classmethod
+    def default_storage_dir(cls) -> Path:
+        """默认记忆根目录（与 DurableKnowledgeLayer / KnowledgeRetriever 约定一致）。"""
+        return Path.home() / ".claude" / "memory"
+
     def __init__(self, memory_dir: Optional[Path] = None):
         """
         初始化个性化记忆
@@ -755,7 +760,7 @@ class PersonalMemory:
         Args:
             memory_dir: 记忆存储目录 (默认 ~/.claude/memory/)
         """
-        self.memory_dir = memory_dir or Path.home() / ".claude" / "memory"
+        self.memory_dir = memory_dir or self.default_storage_dir()
         self.memory_dir.mkdir(parents=True, exist_ok=True)
 
         # 存储结构

@@ -53,31 +53,64 @@ def debug_log(message: str):
 
 
 # 延迟导入，避免启动时的错误
-_PermissionMemory = None
 _extract_permission_pattern = None
+_durable_layer = None
+_layer_project_path = None
 
 
 def _lazy_import():
     """延迟导入依赖模块"""
-    global _PermissionMemory, _extract_permission_pattern
+    global _extract_permission_pattern
 
-    if _PermissionMemory is not None:
+    if _extract_permission_pattern is not None:
         return True
 
     try:
-        # 添加项目路径
         project_root = Path(__file__).parent.parent
         if str(project_root) not in sys.path:
             sys.path.insert(0, str(project_root))
 
-        from src.memory.personal_memory import PersonalMemory, extract_permission_pattern
+        from src.memory.personal_memory import extract_permission_pattern
 
-        _PermissionMemory = PersonalMemory
         _extract_permission_pattern = extract_permission_pattern
         return True
     except Exception as e:
         debug_log(f"Import error: {e}")
         return False
+
+
+def _reset_durable_layer_cache():
+    global _durable_layer, _layer_project_path
+    _durable_layer = None
+    _layer_project_path = None
+
+
+def _personal_memory_via_assets(cwd: str = ""):
+    """
+    通过 DurableKnowledgeLayer 取 PersonalMemory（持久资产统一入口）。
+
+    Hook 热路径不启用 project_learner，避免重复扫描 .claude/knowledge。
+    """
+    global _durable_layer, _layer_project_path
+
+    if not _lazy_import():
+        return None
+
+    try:
+        project_root = Path(__file__).parent.parent
+        if str(project_root) not in sys.path:
+            sys.path.insert(0, str(project_root))
+
+        from src.core.durable_knowledge import DurableKnowledgeLayer
+
+        path = Path(cwd or os.getcwd()).resolve()
+        if _durable_layer is None or _layer_project_path != path:
+            _durable_layer = DurableKnowledgeLayer.for_hook_personal_memory(path)
+            _layer_project_path = path
+        return _durable_layer.personal_memory
+    except Exception as e:
+        debug_log(f"Durable layer error: {e}")
+        return None
 
 
 def get_hook_event(input_data: dict) -> str:
@@ -212,15 +245,16 @@ def handle_post_tool_use(input_data: dict) -> dict:
         }
 
         # 记录权限决策
-        if _lazy_import() and permission:
+        if permission:
             try:
-                memory = _PermissionMemory()
-                memory.record_permission_decision(
-                    permission=permission,
-                    action="allow",
-                    context=decision_context,
-                )
-                debug_log(f"Recorded: {permission}")
+                memory = _personal_memory_via_assets(pending_data.get("cwd", ""))
+                if memory:
+                    memory.record_permission_decision(
+                        permission=permission,
+                        action="allow",
+                        context=decision_context,
+                    )
+                    debug_log(f"Recorded: {permission}")
             except Exception as e:
                 debug_log(f"Record error: {e}")
 
@@ -253,7 +287,9 @@ def handle_permission_request(input_data: dict) -> dict:
             pattern_info = _extract_permission_pattern(permission)
             if pattern_info:
                 pattern = pattern_info["pattern"]
-                memory = _PermissionMemory()
+                memory = _personal_memory_via_assets(input_data.get("cwd", ""))
+                if not memory:
+                    return {}
                 patterns = memory.get_permission_patterns(min_count=2)
 
                 for pp in patterns:
@@ -279,6 +315,8 @@ def handle_notification(input_data: dict) -> dict:
 
 def main():
     """主函数"""
+    _reset_durable_layer_cache()
+
     # 抑制 stderr（除非调试模式）
     if not os.environ.get("PERMISSION_HOOK_DEBUG"):
         _suppress_stderr()

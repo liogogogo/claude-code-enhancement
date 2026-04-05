@@ -15,8 +15,7 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.core.context_manager import create_context_manager
-from src.core.project_knowledge_learner import ProjectKnowledgeLearner
-from src.core.unified import create_enhancer
+from src.core.durable_knowledge import DurableKnowledgeLayer
 
 DEBUG_LOG = os.path.expanduser("/tmp/session-start-debug.log")
 
@@ -52,6 +51,7 @@ def main():
         debug_log(f"Project path does not exist: {project_path}")
         sys.exit(0)
 
+    cm = None
     try:
         cm = create_context_manager(project_path)
         stats = cm.get_stats()
@@ -89,32 +89,37 @@ def main():
         print(f"\n# 项目索引失败: {error}")
 
     try:
-        learner = ProjectKnowledgeLearner(project_path)
-        knowledge = learner.load_knowledge()
-        if knowledge is None:
-            debug_log("Learning project knowledge...")
-            knowledge = learner.learn()
-            print("\n# 项目知识学习完成")
-        else:
-            print("\n# 项目知识已加载")
+        assets = DurableKnowledgeLayer.for_session_bootstrap(project_path)
+        knowledge = None
+        if assets.project_learner:
+            knowledge = assets.project_learner.load_knowledge()
+            if knowledge is None:
+                debug_log("Learning project knowledge...")
+                knowledge = assets.project_learner.learn()
+                print("\n# 项目知识学习完成")
+            else:
+                print("\n# 项目知识已加载")
 
-        if knowledge.structure:
-            print(f"- 类型: {knowledge.structure.type}")
-            if knowledge.structure.framework:
-                print(f"- 框架: {knowledge.structure.framework}")
-        if knowledge.naming:
-            print(f"- 命名风格: {knowledge.naming.function_style}")
-        if knowledge.style:
-            print(f"- 缩进: {knowledge.style.indent_size} 空格")
+        if knowledge:
+            if knowledge.structure:
+                print(f"- 类型: {knowledge.structure.type}")
+                if knowledge.structure.framework:
+                    print(f"- 框架: {knowledge.structure.framework}")
+            if knowledge.naming:
+                print(f"- 命名风格: {knowledge.naming.function_style}")
+            if knowledge.style:
+                print(f"- 缩进: {knowledge.style.indent_size} 空格")
 
-        enhancer = create_enhancer(project_path=project_path)
         print("\n# 增强系统")
-        print("- 统一上下文准备已启用")
+        print("- 持久资产层已就绪（记忆 + 项目知识 + 检索注入）")
         print("- 架构图: `python3 hooks/context_query.py architecture`")
         print("- 结构化上下文: `python3 hooks/context_query.py prepare <query> --show-trace`")
-        debug_log(f"Enhancer stats: {enhancer.get_stats()}")
+        stats = assets.stats_dict()
+        if cm is not None:
+            stats["context_manager"] = cm.get_stats()
+        debug_log(f"DurableKnowledgeLayer stats: {stats}")
     except Exception as error:
-        debug_log(f"Knowledge/enhancer error: {error}")
+        debug_log(f"Knowledge/durable layer error: {error}")
 
     sys.exit(0)
 

@@ -19,7 +19,13 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.memory.personal_memory import PersonalMemory
+from src.core.durable_knowledge import DurableKnowledgeLayer
+
+
+def _open_memory():
+    """与个人记忆文件同一入口，经耐久资产层（不挂载项目学习）。"""
+    layer = DurableKnowledgeLayer.for_hook_personal_memory(Path.cwd())
+    return DurableKnowledgeLayer.require_personal_memory(layer)
 
 
 def print_stats(memory: PersonalMemory):
@@ -117,7 +123,7 @@ def get_existing_permissions():
 
 
 def main():
-    memory = PersonalMemory()
+    memory = _open_memory()
 
     if len(sys.argv) > 1:
         arg = sys.argv[1]

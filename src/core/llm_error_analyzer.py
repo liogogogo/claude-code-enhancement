@@ -20,6 +20,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+from ..memory.personal_memory import PersonalMemory
+
 
 @dataclass
 class ErrorAnalysis:
@@ -53,7 +55,7 @@ class LLMErrorAnalyzer:
             memory_path: 记忆存储路径
             llm_client: LLM 客户端（可选，用于高级分析）
         """
-        self.memory_path = memory_path or Path.home() / ".claude" / "memory"
+        self.memory_path = memory_path or PersonalMemory.default_storage_dir()
         self.llm_client = llm_client
 
         # 错误知识库

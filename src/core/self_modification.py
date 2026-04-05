@@ -17,6 +17,7 @@ from src.layer2.contrastive_learning import ContrastiveLearningModule, CodePair
 from src.layer2.feedback_loop import FeedbackLoop, FeedbackItem
 from src.layer3.adaptation_engine import AdaptationEngine, AdaptationProposal
 from src.layer3.evolution_tracker import EvolutionTracker, EvolutionMetric
+from src.memory.personal_memory import PersonalMemory
 
 
 class ModificationType(Enum):
@@ -447,7 +448,7 @@ class SelfModificationEngine:
         }
 
         file_name = knowledge_files.get(knowledge_type, "knowledge.json")
-        knowledge_file = Path.home() / ".claude" / "memory" / file_name
+        knowledge_file = PersonalMemory.default_storage_dir() / file_name
         knowledge_file.parent.mkdir(parents=True, exist_ok=True)
 
         # 加载现有知识
@@ -577,7 +578,7 @@ class SelfModificationEngine:
         # 根据修改类型测量特定指标
         if proposal.modification_type == ModificationType.KNOWLEDGE_ADDITION:
             # 测量知识库增长
-            knowledge_file = Path.home() / ".claude" / "memory" / "knowledge.json"
+            knowledge_file = PersonalMemory.default_storage_dir() / "knowledge.json"
             if knowledge_file.exists():
                 try:
                     import json
